@@ -25,9 +25,8 @@
 namespace core_completion;
 
 defined('MOODLE_INTERNAL') || die();
-
+require_once($CFG->dirroot.'/blocks/progress/lib.php');
 require_once($CFG->libdir . '/completionlib.php');
-
 /**
  * Class used to return completion progress information.
  *
@@ -74,15 +73,75 @@ class progress {
         $count = count($modules);
         if (!$count) {
             return null;
-        }
+        }                 
+        return \core_completion\progress::calculate_progress_block($course, $userid, $modules, $completion);
+    }
 
-        // Get the number of modules that have been completed.
+    /**
+     * Calculate percentage based on progress bar block and its enabled activities
+     */
+    public static function calculate_progress_block($course, $userid, $modules, $completion){
+        $courseid = $course->id;
+        global $DB;
+        $sql = "SELECT bi.id,
+                           bp.id AS blockpositionid,
+                           COALESCE(bp.region, bi.defaultregion) AS region,
+                           COALESCE(bp.weight, bi.defaultweight) AS weight,
+                           COALESCE(bp.visible, 1) AS visible,
+                           bi.configdata
+                      FROM {block_instances} bi
+                 LEFT JOIN {block_positions} bp ON bp.blockinstanceid = bi.id
+                                               AND ".$DB->sql_like('bp.pagetype', ':pagetype', false)."
+                     WHERE bi.blockname = 'progress'
+                       AND bi.parentcontextid = :contextid
+                  ORDER BY region, weight, bi.id";
+        $modules_enabled = block_progress_modules_in_use($courseid);
+        $context = block_progress_get_course_context($courseid);
+        $params = array('contextid' => $context->id, 'pagetype' => 'course-view-%');
+        $blockinstances = $DB->get_records_sql($sql, $params);
+        foreach ($blockinstances as $blockid => $blockinstance) {
+            $blockinstance->config = unserialize(base64_decode($blockinstance->configdata));
+            if (!empty($blockinstance->config)) {
+                $blockinstance->events = block_progress_event_information(
+                                             $blockinstance->config,
+                                             $modules_enabled,
+                                             $course->id);
+                $blockinstance->events = block_progress_filter_visibility($blockinstance->events,
+                                             $userid, $context, $course);
+            }
+            $attempts = block_progress_attempts($modules_enabled,
+                                                $blockinstance->config,
+                                                $blockinstance->events,
+                                                $userid,
+                                                $courseid);
+            $progress = block_progress_percentage($blockinstance->events, $attempts);
+            // Considering only the first progress block 
+            return $progress;
+        }   
+        return \core_completion\progress::all_activities_weights($modules, $completion, $userid);
+    }
+
+    /**
+     * If it doesn't exist a progress block then consider all activities with no empty weights   
+     */
+    public static function all_activities_weights($modules, $completion, $userid){
+        global $DB;
         $completed = 0;
+        $total_weight = 0;
         foreach ($modules as $module) {
             $data = $completion->get_data($module, true, $userid);
-            $completed += $data->completionstate == COMPLETION_INCOMPLETE ? 0 : 1;
+            $weights = $DB->get_records_sql("
+                SELECT sum(intvalue) as total_secs
+                FROM {customfield_data} d
+                INNER JOIN {customfield_field} f ON d.fieldid=f.id
+                WHERE
+                    f.shortname in ('duration_hours', 'duration_mins') AND d.instanceid=?", array($data->coursemoduleid));
+            foreach ($weights as $key => $value) {
+                $total_weight += $key;
+                $completed += $data->completionstate == COMPLETION_INCOMPLETE ? 0 : $key;
+            }
         }
-
-        return ($completed / $count) * 100;
+        return (int)round(($completed / $total_weight) * 100);
     }
 }
+
