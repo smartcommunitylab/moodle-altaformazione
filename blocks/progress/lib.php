@@ -1628,16 +1628,25 @@ function block_progress_bar($modules, $config, $events, $userid, $instance, $att
  * @return int  Progress value as a percentage
  */
 function block_progress_percentage($events, $attempts) {
-    $attemptcount = 0;
-
+    global $DB;
+    $total_weight = 0;
+    $attempts_weight = 0;
     foreach ($events as $event) {
-        if ($attempts[$event['type'].$event['id']] == 1) {
-            $attemptcount++;
+        $cmid = $event['cm']->id;
+        $weights = $DB->get_records_sql("
+        SELECT sum(intvalue) as total_secs
+        FROM {customfield_data} d
+        INNER JOIN {customfield_field} f ON d.fieldid=f.id
+        WHERE
+            f.shortname in ('duration_hours', 'duration_mins') AND d.instanceid=?", array($cmid));
+        foreach($weights as $key => $value){
+            $total_weight += $key;
+            if ($attempts[$event['type'].$event['id']] == 1) {
+                $attempts_weight += $key;
+            }
         }
     }
-
-    $progressvalue = $attemptcount == 0 ? 0 : $attemptcount / count($events);
-
+    $progressvalue = $attempts_weight == 0 ? 0 : $attempts_weight / $total_weight;
     return (int)round($progressvalue * 100);
 }
 
