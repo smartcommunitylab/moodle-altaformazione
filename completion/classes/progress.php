@@ -141,7 +141,26 @@ class progress {
                 $completed += $data->completionstate == COMPLETION_INCOMPLETE ? 0 : $key;
             }
         }
-        return (int)round(($completed / $total_weight) * 100);
+        if($total_weight == 0){
+            return \core_completion\progress::count_completed_activities($modules, $completion, $userid);
+        } else{
+            return (int)round(($completed / $total_weight) * 100);  
+            
+        }
+    }
+
+    /**
+     * Standard way of counting completed activities 
+     */
+    public static function count_completed_activities($modules, $completion, $userid){
+        // Get the number of modules that have been completed.
+        $count = count($modules);
+        $completed = 0;
+        foreach ($modules as $module) {
+            $data = $completion->get_data($module, true, $userid);
+            $completed += $data->completionstate == COMPLETION_INCOMPLETE ? 0 : 1;
+        }
+        return ($completed / $count) * 100;
     }
 }
 
