@@ -219,7 +219,9 @@ class format_remuiformat_card_all_sections_summary implements renderable, templa
 
                 if ($export->generalsection['percentage'] != 100) {
                     // Get reseume activity link.
-                    $export->resumeactivityurl = $this->courseformatdatacommontrait->get_activity_to_resume($this->course);
+                    $activity_to_resume = $this->courseformatdatacommontrait->get_activity_to_resume($this->course);
+                    $export->resumeactivityurl = $activity_to_resume["url"];
+                    $export->resumeactivityname = $activity_to_resume["name"];
                 }
                 // Add new activity.
                 $export->generalsection['addnewactivity'] = $this->courserenderer->course_section_add_cm_control(

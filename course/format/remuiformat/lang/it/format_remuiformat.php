@@ -86,7 +86,7 @@ $string['changelayoutnotify'] = 'Refresh page to see changes.';
 $string['generalactivities'] = 'Activities';
 $string['coursecompletionprogress'] = 'Course Progress';
 $string['resumetoactivity'] = 'Resume';
-$string['lastactivity'] = 'Last accessed activity';
+$string['lastactivity'] = 'Ultima Attività Eseguita';
 
 // For list format.
 $string['remuicourseformat'] = 'Choose layout';

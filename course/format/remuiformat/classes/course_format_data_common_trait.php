@@ -544,7 +544,7 @@ class course_format_data_common_trait {
         if (empty($lastviewed)) {
             $lastviewed = $this->get_activity_to_resume_from_log($course);
             if ($lastviewed === false) {
-                return '';
+                return array("url" => "", "name" => "");
             }
         }
 
@@ -553,16 +553,16 @@ class course_format_data_common_trait {
 
         // Check if activity record exists.
         if (!$mod = $modinfo->cms[$lastviewed->cm]) {
-            return '';
+            return array("url" => "", "name" => "");
         }
 
         // Check if activity url is set.
         if (empty($mod->url)) {
-            return '';
+            return array("url" => "", "name" => "");
         }
 
         // Return activity url.
-        return $mod->url->out();
+        return array("url" => $mod->url->out(), "name" => $mod->name);
     }
 
     /**

@@ -68,6 +68,7 @@
                     {{{teacherimg}}}
                 {{/teachers}}
             </div>
+            
             {{#percentage}}
                 <div class="progress progress-square mb-0">
                     <div class="progress-bar bg-green-600" style="width: {{{percentage}}}%; height: 100%;" role="progressbar">
@@ -78,7 +79,7 @@
         </div>
 
         <span class="hidden sectionname">{{{generalsectiontitle}}}</span>
-
+        
         <div class="content">
             <div class="section_availability badge badge-pill badge-info mb-10"></div>
             <ul class="general-section-activities img-text row p-0 py-10 py-2 p-y-1 d-flex justify-content-start text-center">
@@ -109,3 +110,19 @@
         </div>
     </div>
 </li>
+{{#resumeactivityurl}}
+<li id="section-00" class="card section main  clearfix mb-4 m-b-2" role="region" aria-labelledby="section-00 .sectionname a:not(.quickeditlink)">
+    <div class="content card-block px-15 px-3 py-10 py-2 remui-list-content-border" aria-labelledby="section-00 .sectionname a:not(.quickeditlink)">
+        <h4 class="sectionname card-title">
+            <a class="panel-title p-0" href="#sectionwrapper-00" aria-controls="sectionwrapper-00">
+            {{#str}} lastactivity, format_remuiformat{{/str}}                          
+            </a>
+        </h4>
+        <div class="summary card-text"><div class="no-overflow"><p></p></div></div>
+        <div class="section_availability badge badge-pill badge-info mb-10"></div>
+        <div class="px-15 px-3 py-10 py-2 card-footer text-muted border-top" aria-labelledby="section-00 .sectionname a:not(.quickeditlink)" >
+            <a class="bold" href="{{{ resumeactivityurl }}}">{{{resumeactivityname}}}</a>
+        </div>
+    </div>
+</li>
+{{/resumeactivityurl}}
