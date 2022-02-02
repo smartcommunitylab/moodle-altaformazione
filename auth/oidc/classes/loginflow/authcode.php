@@ -145,15 +145,23 @@ class authcode extends base {
      */
     public function user_login($username, $password = null) {
         global $CFG, $DB;
+        $userexists = false;
+        $email = "";
 
-        // Check user exists.
-        $userfilters = ['username' => $username, 'mnethostid' => $CFG->mnet_localhost_id, 'auth' => 'oidc'];
-        $userexists = $DB->record_exists('user', $userfilters);
-
-        // Check token exists.
-        $tokenrec = $DB->get_record('auth_oidc_token', ['username' => $username]);
+        $userfilters = ['username' => $username, 'mnethostid' => $CFG->mnet_localhost_id]; //,  'auth' => 'oidc'
+        $user = $DB->get_record('user', $userfilters);
+        if($user){
+            $userexists = true;
+            $email = $user->email;
+        }
+            
+        //$tokenrec = $DB->get_record('auth_oidc_token', ['oidcuniqid' => $username]);
         $code = optional_param('code', null, PARAM_RAW);
-        $tokenvalid = (!empty($tokenrec) && !empty($code) && $tokenrec->authcode === $code) ? true : false;
+        // Check token exists.
+        $select = "authcode = :authcode AND (username = :username OR LOWER(username) = LOWER(:email))";
+        $params = array('authcode' => $code, 'username' => $username, 'email' => $email);
+        $tokenrec = (object)$DB->get_record_select('auth_oidc_token', $select, $params); 
+        $tokenvalid = (!empty($tokenrec) && !empty($code)) ? true : false;
         return ($userexists === true && $tokenvalid === true) ? true : false;
     }
 
@@ -248,9 +256,9 @@ class authcode extends base {
             // Check if that Microsoft 365 account already exists in moodle.
             $userrec = $DB->count_records_sql('SELECT COUNT(*)
                                                  FROM {user}
-                                                WHERE username = ?
+                                                WHERE (username = ? OR email = ?)
                                                       AND id != ?',
-                    [$idtoken->claim('upn'), $USER->id]);
+                    [$idtoken->claim('preferred_username'), $idtoken->claim('preferred_username'), $USER->id]);
 
             if (!empty($userrec)) {
                 if (empty($additionaldata['redirect'])) {
@@ -463,7 +471,10 @@ class authcode extends base {
 
             // Generate a Moodle username.
             // Use 'upn' if available for username (Azure-specific), or fall back to lower-case oidcuniqid.
-            $username = $idtoken->claim('upn');
+            $username = $idtoken->claim('preferred_username');
+            if (empty($username)) {
+                $username = $idtoken->claim('username');
+            }
             $originalupn = null;
             if (empty($username)) {
                 $username = $oidcuniqid;
@@ -494,17 +505,33 @@ class authcode extends base {
 
             $existinguserparams = ['username' => $username, 'mnethostid' => $CFG->mnet_localhost_id];
             if ($DB->record_exists('user', $existinguserparams) !== true) {
-                // User does not exist. Create user if site allows, otherwise fail.
-                if (empty($CFG->authpreventaccountcreation)) {
-                    $user = create_user_record($username, null, 'oidc');
-                } else {
-                    // Trigger login failed event.
-                    $failurereason = AUTH_LOGIN_NOUSER;
-                    $eventdata = ['other' => ['username' => $username, 'reason' => $failurereason]];
-                    $event = \core\event\user_login_failed::create($eventdata);
-                    $event->trigger();
-                    throw new \moodle_exception('errorauthloginfailednouser', 'auth_oidc', null, null, '1');
-                }
+                if (!empty($CFG->authloginviaemail)) {
+                    if ($email = clean_param($username, PARAM_EMAIL)) {
+                        $select = "mnethostid = :mnethostid AND LOWER(email) = LOWER(:email) AND deleted = 0";
+                        $params = array('mnethostid' => $CFG->mnet_localhost_id, 'email' => $email);
+                        $users = $DB->get_records_select('user', $select, $params, 'id', 'id', 0, 2);
+                        if (count($users) === 1) {
+                            // Use email for login only if unique.
+                            $user = reset($users);
+                            $user = get_complete_user_data('id', $user->id);
+                            $username = $user->username;
+                        }
+                        unset($users);
+                    }
+                } 
+                if($user == null){
+                    if (empty($CFG->authpreventaccountcreation)) {
+                        // User does not exist. Create user if site allows, otherwise fail.
+                        $user = create_user_record($username, null, 'oidc');
+                    } else {
+                        // Trigger login failed event.
+                        $failurereason = AUTH_LOGIN_NOUSER;
+                        $eventdata = ['other' => ['username' => $username, 'reason' => $failurereason]];
+                        $event = \core\event\user_login_failed::create($eventdata);
+                        $event->trigger();
+                        throw new \moodle_exception('errorauthloginfailednouser', 'auth_oidc', null, null, '1');
+                    }
+                }                
             }
 
             $user = authenticate_user_login($username, null, true);

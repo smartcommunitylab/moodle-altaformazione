@@ -454,7 +454,10 @@ class base {
         }
 
         // Use 'oid' if available (Azure-specific), or fall back to standard "sub" claim.
-        $oidcuniqid = $idtoken->claim('oid');
+        $oidcuniqid = $idtoken->claim('preferred_username');
+        if (empty($oidcuniqid)) {
+            $oidcuniqid = $idtoken->claim('username');
+        }
         if (empty($oidcuniqid)) {
             $oidcuniqid = $idtoken->claim('sub');
         }
@@ -540,7 +543,10 @@ class base {
             $oidcusername = $originalupn;
         } else {
             // Determine remote username. Use 'upn' if available (Azure-specific), or fall back to standard 'sub'.
-            $oidcusername = $idtoken->claim('upn');
+            $oidcusername = $idtoken->claim('preferred_username');
+            if (empty($oidcusername)) {
+                $oidcusername = $idtoken->claim('username');
+            }
             if (empty($oidcusername)) {
                 $oidcusername = $idtoken->claim('sub');
             }
