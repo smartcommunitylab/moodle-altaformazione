@@ -131,9 +131,12 @@ class mod_quiz_external extends external_api {
                                                     'reviewspecificfeedback', 'reviewgeneralfeedback', 'reviewrightanswer',
                                                     'reviewoverallfeedback', 'questionsperpage', 'navmethod',
                                                     'browsersecurity', 'delay1', 'delay2', 'showuserpicture', 'showblocks',
-                                                    'completionattemptsexhausted', 'completionpass', 'overduehandling',
+                                                    'completionattemptsexhausted', 'overduehandling',
                                                     'graceperiod', 'canredoquestions', 'allowofflineattempts');
                         $viewablefields = array_merge($viewablefields, $additionalfields);
+
+                        // Any course module fields that previously existed in quiz.
+                        $quizdetails['completionpass'] = $quizobj->get_cm()->completionpassgrade;
                     }
 
                     // Fields only for managers.
@@ -463,6 +466,8 @@ class mod_quiz_external extends external_api {
                 'timecheckstate' => new external_value(PARAM_INT, 'Next time quiz cron should check attempt for
                                                         state changes.  NULL means never check.', VALUE_OPTIONAL),
                 'sumgrades' => new external_value(PARAM_FLOAT, 'Total marks for this attempt.', VALUE_OPTIONAL),
+                'gradednotificationsenttime' => new external_value(PARAM_INT,
+                    'Time when the student was notified that manual grading of their attempt was complete.', VALUE_OPTIONAL),
             )
         );
     }
@@ -709,6 +714,16 @@ class mod_quiz_external extends external_api {
                     ), 'Preflight required data (like passwords)', VALUE_DEFAULT, array()
                 ),
                 'forcenew' => new external_value(PARAM_BOOL, 'Whether to force a new attempt or not.', VALUE_DEFAULT, false),
+                'forcequestions' => new external_multiple_structure(
+                    new external_single_structure(
+                        array(
+                            'slot' => new external_value(PARAM_INT, 'question slot'),
+                            'value' => new external_value(PARAM_RAW, 'question name'),
+                        )
+                    ), 'Preflight required data (like passwords)', VALUE_DEFAULT, array()
+                ),
+                'userid' => new external_value(PARAM_INT, 'user id', VALUE_OPTIONAL),
+                'time_start' => new external_value(PARAM_INT, 'time_start', VALUE_OPTIONAL) 
 
             )
         );
@@ -724,7 +739,7 @@ class mod_quiz_external extends external_api {
      * @since Moodle 3.1
      * @throws moodle_quiz_exception
      */
-    public static function start_attempt($quizid, $preflightdata = array(), $forcenew = false) {
+    public static function start_attempt($quizid, $preflightdata = array(), $forcenew = false, $forcequestions = array(), $userid = null, $time_start=null, $time_end=null) {
         global $DB, $USER;
 
         $warnings = array();
@@ -740,7 +755,7 @@ class mod_quiz_external extends external_api {
 
         list($quiz, $course, $cm, $context) = self::validate_quiz($params['quizid']);
 
-        $quizobj = quiz::create($cm->instance, $USER->id);
+        $quizobj = quiz::create($cm->instance, $userid);
 
         // Check questions.
         if (!$quizobj->has_questions()) {
@@ -748,7 +763,10 @@ class mod_quiz_external extends external_api {
         }
 
         // Create an object to manage all the other (non-roles) access rules.
-        $timenow = time();
+        if($time_start != null)
+            $timenow = $time_start;
+        else
+            $timenow = time();
         $accessmanager = $quizobj->get_access_manager($timenow);
 
         // Validate permissions for creating a new attempt and start a new preview attempt if required.
@@ -793,7 +811,24 @@ class mod_quiz_external extends external_api {
                 }
             }
             $offlineattempt = WS_SERVER ? true : false;
-            $attempt = quiz_prepare_and_start_new_attempt($quizobj, $attemptnumber, $lastattempt, $offlineattempt);
+            $forced_qst = array();
+            foreach($forcequestions as $question){
+                $questionssql = "SELECT q.id
+                                FROM {question} q
+                                JOIN {question_versions} qv on qv.questionid = q.id
+                                JOIN {question_bank_entries} qb on qb.id = qv.questionbankentryid                                
+                                JOIN {question_categories} qg on qg.id = qb.questioncategoryid
+                                JOIN {context} con on con.id = qg.contextid
+                                JOIN {course_modules} cm on  cm.id = con.instanceid                        
+                                WHERE " . $DB->sql_compare_text('questiontext') . " = ?
+                                AND cm.instance = $quizid";
+                $questions = $DB->get_records_sql($questionssql, array($question["value"]));
+                foreach($questions as $questionid => $quest){
+                    if(!array_search($questionid, $forced_qst))
+                        $forced_qst[$question["slot"]] = $questionid;
+                }
+            }
+            $attempt = quiz_prepare_and_start_new_attempt($quizobj, $attemptnumber, $lastattempt, $offlineattempt, $forced_qst, array(), $userid, $time_start, $time_end);
         }
 
         $result = array();
@@ -836,9 +871,9 @@ class mod_quiz_external extends external_api {
         self::validate_context($context);
 
         // Check that this attempt belongs to this user.
-        if ($attemptobj->get_userid() != $USER->id) {
-            throw new moodle_quiz_exception($attemptobj->get_quizobj(), 'notyourattempt');
-        }
+        //if ($attemptobj->get_userid() != $USER->id) {
+        //    throw new moodle_quiz_exception($attemptobj->get_quizobj(), 'notyourattempt');
+        //}
 
         // General capabilities check.
         $ispreviewuser = $attemptobj->is_preview_user();
@@ -1296,7 +1331,8 @@ class mod_quiz_external extends external_api {
                             'value' => new external_value(PARAM_RAW, 'data value'),
                         )
                     ), 'Preflight required data (like passwords)', VALUE_DEFAULT, array()
-                )
+                ),
+                'time_end' => new external_value(PARAM_INT, 'time_end', VALUE_OPTIONAL)
             )
         );
     }
@@ -1312,8 +1348,8 @@ class mod_quiz_external extends external_api {
      * @return array of warnings and the attempt state after the processing
      * @since Moodle 3.1
      */
-    public static function process_attempt($attemptid, $data, $finishattempt = false, $timeup = false, $preflightdata = array()) {
-        global $USER;
+    public static function process_attempt($attemptid, $data, $finishattempt = false, $timeup = false, $preflightdata = array(),  $time_end=null) {
+        global $DB, $USER;
 
         $warnings = array();
 
@@ -1350,6 +1386,11 @@ class mod_quiz_external extends external_api {
         // Update the timemodifiedoffline field.
         $attemptobj->set_offline_modified_time($timenow);
         $result['state'] = $attemptobj->process_attempt($timenow, $finishattempt, $timeup, 0);
+        if ($time_end != null) {
+            $att = $DB->get_record('quiz_attempts', array('id' => $attemptid));
+            $att->timefinish = $time_end;
+            $DB->update_record('quiz_attempts', $att);
+        }
 
         $result['warnings'] = $warnings;
         return $result;
@@ -1892,9 +1933,9 @@ class mod_quiz_external extends external_api {
         $attempttocheck = 0;
         if (!empty($params['attemptid'])) {
             $attemptobj = quiz_attempt::create($params['attemptid']);
-            if ($attemptobj->get_userid() != $USER->id) {
-                throw new moodle_quiz_exception($attemptobj->get_quizobj(), 'notyourattempt');
-            }
+            //if ($attemptobj->get_userid() != $USER->id) {
+            //    throw new moodle_quiz_exception($attemptobj->get_quizobj(), 'notyourattempt');
+            //}
             $attempttocheck = $attemptobj->get_attempt();
         }
 
