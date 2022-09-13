@@ -811,8 +811,39 @@ class mod_quiz_external extends external_api {
                 }
             }
             $offlineattempt = WS_SERVER ? true : false;
+
             $forced_qst = array();
-            foreach($forcequestions as $question){
+            # TODO add query for static questions quiz
+
+            # get the question categories
+            $quiz_questions_categ = array();
+            $categ_sql = "SELECT filtercondition 
+                    FROM moodle.mdl_question_set_references qr
+                    join mdl_context c  on c.id = qr.usingcontextid
+                    join mdl_course_modules on mdl_course_modules.id = c.instanceid
+                where mdl_course_modules.instance = ? 
+                group by filtercondition";
+            $categories = $DB->get_records_sql($categ_sql, array($quizid));
+            foreach($categories as $category){
+                $filterconditions = json_decode($category->filtercondition);
+                $quiz_questions_categ[] = $filterconditions->questioncategoryid;
+            }
+            $str_categ = "(". implode(",", $quiz_questions_categ) . ")";
+
+            foreach($forcequestions as $question){                
+                # get the question id
+                $questionsql = "select q.id 
+                                from mdl_question q
+                                join mdl_question_versions qv on qv.questionid = q.id
+                                join mdl_question_bank_entries qb on qb.id = qv.questionbankentryid
+                                join mdl_question_categories qc on qc.id = qb.questioncategoryid
+                            where " . $DB->sql_compare_text('q.name') . " = ? and qc.id in " . $str_categ;
+                $question_result = $DB->get_record_sql($questionsql, array(htmlentities(html_entity_decode($question["value"], ENT_QUOTES, 'UTF-8')))); 
+                if($question_result){
+                    if(!array_search($question_result->id, $forced_qst))
+                        $forced_qst[$question["slot"]] = $question_result->id;
+                }
+                /*
                 $questionssql = "SELECT q.id
                                 FROM {question} q
                                 JOIN {question_versions} qv on qv.questionid = q.id
@@ -822,12 +853,15 @@ class mod_quiz_external extends external_api {
                                 JOIN {course_modules} cm on  cm.id = con.instanceid                        
                                 WHERE " . $DB->sql_compare_text('questiontext') . " = ?
                                 AND cm.instance = $quizid";
-                $questions = $DB->get_records_sql($questionssql, array($question["value"]));
+                var_dump(html_entity_decode($question["value"], ENT_QUOTES, 'UTF-8'));
+                $questions = $DB->get_records_sql($questionssql, array(html_entity_decode($question["value"], ENT_QUOTES, 'UTF-8')));
+                var_dump($questions);
                 foreach($questions as $questionid => $quest){
                     if(!array_search($questionid, $forced_qst))
                         $forced_qst[$question["slot"]] = $questionid;
                 }
-            }
+                */
+	    }
             $attempt = quiz_prepare_and_start_new_attempt($quizobj, $attemptnumber, $lastattempt, $offlineattempt, $forced_qst, array(), $userid, $time_start, $time_end);
         }
 
