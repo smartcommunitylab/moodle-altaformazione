@@ -66,7 +66,7 @@ class local_modcustomfields_external extends external_api {
     public static function add_resource($courseid, $sectionid, $resourcename, $path, $duration_hours, $duration_min, $intro, $stealth) {
         global $DB, $CFG;
         $module = self::add_resource_coursemodule($courseid, $sectionid, $resourcename, $duration_hours, $duration_min, $intro, $stealth);
-        //self::create_file_from_pathname($module->coursemodule, 'mod_resource', 0, $path, "content");
+        #self::create_file_from_pathname($module->coursemodule, 'mod_resource', 0, $path, "content");
         $result = array();
         $result['moduleid'] = $module->instance;
         return $result;
@@ -83,11 +83,11 @@ class local_modcustomfields_external extends external_api {
             array(
                 'courseid' => new external_value(PARAM_INT, 'courseid instance id'),
                 'sectionid' => new external_value(PARAM_INT, 'section id'),
-                'resourcename' => new external_value(PARAM_TEXT, 'resource name'),
+                'resourcename' => new external_value(PARAM_RAW, 'resource name'),
                 'path' => new external_value(PARAM_PATH, 'path'),
                 'duration_hours' => new external_value(PARAM_INT, 'restricted_by_activity_id') ,
                 'duration_min' => new external_value(PARAM_INT, 'restricted_by_activity_id'),
-                'intro' => new external_value(PARAM_TEXT, 'description '),
+                'intro' => new external_value(PARAM_RAW, 'description '),
                 'stealth' => new external_value(PARAM_INT, 'stealth mode ')
             )
         );
@@ -169,7 +169,7 @@ class local_modcustomfields_external extends external_api {
         $nr = 1;
         foreach($questions as $key => $question){
             $questiondata['surveyid'] = $questionnaire->sid;
-            $questiondata['name'] = substr($question["name"],0,20);
+            $questiondata['name'] = substr($question["name"],0,40);
             $questiondata['content'] = $question["description"];
             $questiondata['required'] = $question["required"];
             $questiondata['position'] = $question["position"];
@@ -192,15 +192,17 @@ class local_modcustomfields_external extends external_api {
                 }                
             } elseif($question["tipo"] == 3){ // multichoice
                 $questiondata['length'] = $question["max_responses"];
-                if($question["single"] == 1)
+                if($question["single"] == 1){
                     $questiondata['type_id'] = 4; //radio
+                    $questiondata['length'] = 0;
+                }
                 else
                     $questiondata['type_id'] = 5; //checkbox
                 $opt = explode("@@", $question["options"]);
                 $res_opt = array();
                 foreach($opt as $o){
                     $tmp = explode(",," , $o);
-                    if($tmp[1] == "0")
+                    if($tmp[1] == 0)
                         $name_opt = $tmp[0];
                     else
                         $name_opt = "!other={$tmp[0]}";
@@ -283,16 +285,17 @@ class local_modcustomfields_external extends external_api {
     }
 
     function create_quiz($courseid, $sectionid, $quiz_intro, $quiz_name, $attempts, $qperpage, $timeopen, $timeclose, 
-                             $duration_hours, $duration_min, $israndom, $maxquestions,
-                             $restricted_by_activity_id, $pages, $stealth, $questions) {
+                             $duration_hours, $duration_min, $israndom,
+                             $pages, $stealth, $questions) {
         $generator = new testing_data_generator();
         $generator = $generator->get_plugin_generator('mod_quiz');
         $cm = self::add_quiz_coursemodule($courseid, $sectionid, $quiz_name, $quiz_intro, $qperpage, $attempts, 
-                                            $timeopen, $timeclose, $duration_hours, $duration_min, $restricted_by_activity_id, $stealth);
+                                            $timeopen, $timeclose, $duration_hours, $duration_min, $stealth);
         $quiz = new stdClass();
         $quiz->id = $cm->instance;
         $quiz->questionsperpage = $cm->questionsperpage;
         $quiz->coursemodule = $cm->coursemodule;
+           
         $questiontext = "";
         $page = 0;
         $pages = explode("@@", $pages);
@@ -331,17 +334,103 @@ class local_modcustomfields_external extends external_api {
                     self::create_quiz_section($quiz->id, $pages[$page], $key+1);
                 $page++;
             }
-        }
+        }        
+        $resp = array("moduleid" => $quiz->id);
+        return $resp;
+    }
+
+    function create_quiz_random($courseid, $sectionid, $quiz_intro, $quiz_name, $attempts, $qperpage, $timeopen, $timeclose, 
+                             $duration_hours, $duration_min, $israndom,
+                             $stealth, $questioncategids) {
+        $generator = new testing_data_generator();
+        $generator = $generator->get_plugin_generator('mod_quiz');
+        $cm = self::add_quiz_coursemodule($courseid, $sectionid, $quiz_name, $quiz_intro, $qperpage, $attempts, 
+                                            $timeopen, $timeclose, $duration_hours, $duration_min, $stealth);
+        $quiz = new stdClass();
+        $quiz->id = $cm->instance;
+        $quiz->questionsperpage = $cm->questionsperpage;
+        $quiz->coursemodule = $cm->coursemodule;
         // if the quiz takes random questions
         if($israndom == 1){
-            self::quiz_add_question_random_module_qbank($quiz, $maxquestions);
-        }
+            foreach($questioncategids as $key => $categid){
+                self::quiz_add_question_random_coursecat_qbank($quiz, $categid["maxquestions"], $categid["id"]);
+            }            
+        }  
         $resp = array("moduleid" => $quiz->id);
         return $resp;
     }
     
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function create_question_bank_parameters() {
+        return new external_function_parameters(
+            array(
+                'qbankname' => new external_value(PARAM_RAW, 'question bank name'),
+                'questions' => new external_multiple_structure(
+                    new external_single_structure(
+                        array(
+                            'name' => new external_value(PARAM_RAW, 'full name', VALUE_OPTIONAL),
+                            'text' => new external_value(PARAM_RAW, 'full name', VALUE_OPTIONAL),
+                            'tipo' => new external_value(PARAM_INT, 'full name', VALUE_OPTIONAL),
+                            'single' => new external_value(PARAM_INT, 'course short name', VALUE_OPTIONAL),
+                            'answers' => new external_value(PARAM_RAW, 'answers', VALUE_OPTIONAL)
+                        )
+                    )
+                ),
+                'categoryid' => new external_value(PARAM_INT, 'category id', VALUE_OPTIONAL)
+            )
+        );
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 3.0
+     */
+    public static function create_question_bank_returns() {
+        return new external_single_structure(
+                array(
+                    'questioncategoryid' => new external_value(PARAM_INT, 'id of the question category'),
+                ));
+    }
+
+    function create_question_bank($qbankname, $questions, $categoryid){
+        $questioncategory_id = self::create_qbank($qbankname, $categoryid);
+        foreach($questions as $key => $question){
+            $questiontype = "";
+            $questiontext = $question["text"];
+            switch($question["tipo"]){
+                case 3:
+                    $questiontype = "multichoice";
+                    break;
+                case 4:
+                    $questiontype = "multichoice"; //dropdown
+                    $questiontext = $question["text"] + " {1:MCS:" + $question["answers"] + "}";
+                    break;
+                case 5:
+                    $questiontype = "shortanswer";
+                    break;
+            }   
+            $question_module = self::create_question_inside_qbank($questioncategory_id, $question["name"], $questiontype, $questiontext);
+            if($question["tipo"] == 3){
+                self::create_question_options($question_module, $question["single"]);
+                $answers = explode("@@", $question["answers"]);
+                for($i=0; $i<sizeof($answers); $i++){
+                    $answer = $answers[$i];
+                    $ans_name = explode("$$", $answer)[0];
+                    $ans_fraction = explode("$$", $answer)[1];
+                    self::create_question_answers($question_module, $ans_name, $ans_fraction);
+                } 
+            }
+        }
+        return array("questioncategoryid" => $questioncategory_id);
+    }
     public static function add_quiz_coursemodule($courseid, $sectionid, $quizname, $intro, $questionsperpage, $attempts, 
-                                    $timeopen, $timeclose, $duration_hours, $duration_min, $restricted_by_activity_id, $stealth){
+                                    $timeopen, $timeclose, $duration_hours, $duration_min, $stealth){
         global $DB;
         $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
         $quiz = new stdClass();
@@ -427,6 +516,40 @@ class local_modcustomfields_external extends external_api {
         return $question;
     }
     
+    public static function create_question_inside_qbank($categoryid, $qname, $questiontype, $questiontext=0){
+        global $DB;
+        
+        $qname =  htmlentities(html_entity_decode($qname, ENT_QUOTES, 'UTF-8'));
+        $questiontext =  html_entity_decode($questiontext, ENT_QUOTES, 'UTF-8');
+        $question = new stdClass();
+        $question->generalfeedback = "";
+        $question->name = strlen($qname) > 0 ? substr($qname, 0, 40) : " - ";
+        $question->timecreated = time();
+        $question->timemodified = time();
+        $question->qtype = $questiontype;
+        $question->questiontext = strlen($questiontext) > 0 ? $questiontext : " - ";
+        $question->questiontextformat = 1;
+        $question->createdby = 2;
+        $question->modifiedby = 2;
+        $question->id = $DB->insert_record('question', $question);
+        // Create a bank entry for each question imported.
+        $question = $DB->get_record('question', array('id' => $question->id));
+        $questionbankentry = new \stdClass();
+        $questionbankentry->questioncategoryid = $categoryid;
+        $questionbankentry->idnumber = $question->idnumber ?? null;
+        $questionbankentry->ownerid = $question->createdby;
+        $questionbankentry->id = $DB->insert_record('question_bank_entries', $questionbankentry);
+        // Create a version for each question imported.
+        $questionversion = new \stdClass();
+        $questionversion->questionbankentryid = $questionbankentry->id;
+        $questionversion->questionid = $question->id;
+        $questionversion->version = 1;
+        $questionversion->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
+        $questionversion->id = $DB->insert_record('question_versions', $questionversion);
+        
+        return $question;
+    }
+
     public static function create_question_answers($question, $answer_name, $fraction) {
         global $DB;
         $answer = new stdClass();
@@ -474,7 +597,7 @@ class local_modcustomfields_external extends external_api {
             $options->layout = $question->layout;
         }
         $options->answernumbering = $config->answernumbering;
-        $options->shuffleanswers = $config->shuffleanswers;
+        $options->shuffleanswers = 0; //$config->shuffleanswers;
         $options->showstandardinstruction = 0;
         $options->shownumcorrect = 1;
         $DB->insert_record('qtype_multichoice_options', $options);
@@ -490,112 +613,28 @@ class local_modcustomfields_external extends external_api {
         $questionbankentry->questioncategoryid = $question->category;
         $questionbankentry->idnumber = $question->idnumber ?? null;
         $questionbankentry->ownerid = $question->createdby;
-        $questionbankentry->id = $DB->insert_record('question_bank_entries', $questionbankentry);
-
-        
+        $questionbankentry->id = $DB->insert_record('question_bank_entries', $questionbankentry);  
     }
-
-    
-    function quiz_add_quiz_question($questionid, $quiz, $page = 0, $maxmark = null) {
+       
+    public static function create_qbank($name, $categoryid){  
         global $DB;
-    
-        // Make sue the question is not of the "random" type.
-        $questiontype = $DB->get_field('question', 'qtype', array('id' => $questionid));
-        if ($questiontype == 'random') {
-            throw new coding_exception(
-                    'Adding "random" questions via quiz_add_quiz_question() is deprecated. Please use quiz_add_random_questions().'
-            );
-        }
-    
-        $trans = $DB->start_delegated_transaction();
-        $slots = $DB->get_records('quiz_slots', array('quizid' => $quiz->id),
-                'slot', 'questionid, slot, page, id');
-        if (array_key_exists($questionid, $slots)) {
-            $trans->allow_commit();
-            return false;
-        }
-    
-        $maxpage = 1;
-        $numonlastpage = 0;
-        foreach ($slots as $slot) {
-            if ($slot->page > $maxpage) {
-                $maxpage = $slot->page;
-                $numonlastpage = 1;
-            } else {
-                $numonlastpage += 1;
-            }
-        }
-    
-        // Add the new question instance.
-        $slot = new stdClass();
-        $slot->quizid = $quiz->id;
-        $slot->questionid = $questionid;
-    
-        if ($maxmark !== null) {
-            $slot->maxmark = $maxmark;
-        } else {
-            $slot->maxmark = $DB->get_field('question', 'defaultmark', array('id' => $questionid));
-        }
-    
-        if (is_int($page) && $page >= 1) {
-            // Adding on a given page.
-            $lastslotbefore = 0;
-            foreach (array_reverse($slots) as $otherslot) {
-                if ($otherslot->page > $page) {
-                    $DB->set_field('quiz_slots', 'slot', $otherslot->slot + 1, array('id' => $otherslot->id));
-                } else {
-                    $lastslotbefore = $otherslot->slot;
-                    break;
-                }
-            }
-            $slot->slot = $lastslotbefore + 1;
-            $slot->page = min($page, $maxpage + 1);
-    
-            quiz_update_section_firstslots($quiz->id, 1, max($lastslotbefore, 1));
-    
-        } else {
-            $lastslot = end($slots);
-            if ($lastslot) {
-                $slot->slot = $lastslot->slot + 1;
-            } else {
-                $slot->slot = 1;
-            }
-            if ($quiz->questionsperpage && $numonlastpage >= $quiz->questionsperpage) {
-                $slot->page = $maxpage + 1;
-            } else {
-                $slot->page = $maxpage;
-            }
-        }
-    
-        $DB->insert_record('quiz_slots', $slot);
-
-        $question->id = $DB->insert_record('question', $question);
-        // Create a bank entry for each question imported.
-        $questionbankentry = new \stdClass();
-        $questionbankentry->questioncategoryid = $question->category;
-        $questionbankentry->idnumber = $question->idnumber ?? null;
-        $questionbankentry->ownerid = $question->createdby;
-        $questionbankentry->id = $DB->insert_record('question_bank_entries', $questionbankentry);
-        // Create a version for each question imported.
-        $questionversion = new \stdClass();
-        $questionversion->questionbankentryid = $questionbankentry->id;
-        $questionversion->questionid = $question->id;
-        $questionversion->version = 1;
-        $questionversion->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
-        $questionversion->id = $DB->insert_record('question_versions', $questionversion);
-
-        $trans->allow_commit();
-    }
-
-    
-    function quiz_add_question_random_course_qbank($courseid, $quiz, $number,  $page=0){
-        $contextid = context_course::instance($courseid);
-        $cat = question_get_default_category($contextid->id);
-        quiz_add_random_questions($quiz, $page, $cat->id, $number, false);
-        
+        $context = context_coursecat::instance($categoryid);  
+        $newcategory = new stdClass();
+        $newcategory->parent = question_get_top_category($context->id, true)->id;
+        $newcategory->contextid = $context->id;
+        $newcategory->name = $name;
+        $newcategory->info = $name;
+        $newcategory->sortorder = 999;
+        $newcategory->stamp = make_unique_id_code();
+        $newcategory->id = $DB->insert_record('question_categories', $newcategory);
+        return $newcategory->id;
     }
     
-    public static function quiz_add_question_random_module_qbank($quiz, $number,  $page=0){    
+    public static function quiz_add_question_random_coursecat_qbank($quiz, $number, $categoryid, $page=0){ 
+        quiz_add_random_questions($quiz, $page, $categoryid, $number, false);
+    }
+
+    public static function quiz_add_question_random_module_qbank($quiz, $number, $page=0){  
         $contextid = context_module::instance($quiz->coursemodule);
         $cat = question_get_default_category($contextid->id);
         quiz_add_random_questions($quiz, $page, $cat->id, $number, false);
@@ -621,8 +660,6 @@ class local_modcustomfields_external extends external_api {
                 'duration_hours' => new external_value(PARAM_INT, 'section id'),
                 'duration_min' => new external_value(PARAM_INT, 'section id'),
                 'israndom' => new external_value(PARAM_INT, 'section id'),
-                'maxquestions' => new external_value(PARAM_INT, 'section id'),
-                'restricted_by_activity_id' => new external_value(PARAM_INT, 'section id'),
                 'pages' => new external_value(PARAM_RAW, 'pages'),
                 'stealth' => new external_value(PARAM_INT, 'section id'),
                 'questions' => new external_multiple_structure(
@@ -647,6 +684,46 @@ class local_modcustomfields_external extends external_api {
      * @since Moodle 3.0
      */
     public static function create_quiz_returns() {
+        return new external_single_structure(
+                array(
+                    'moduleid' => new external_value(PARAM_INT, 'moduleid of the resource'),
+                ));
+    }
+
+    public static function create_quiz_random_parameters() {
+        return new external_function_parameters(
+            array(
+                'courseid' => new external_value(PARAM_INT, 'courseid instance id'),
+                'sectionid' => new external_value(PARAM_INT, 'section id'),
+                'quizintro' => new external_value(PARAM_RAW, 'courseid instance id'),
+                'quizname' => new external_value(PARAM_RAW, 'section id'),
+                'attempts' => new external_value(PARAM_INT, 'section id'),
+                'qperpage' => new external_value(PARAM_INT, 'courseid instance id'),
+                'timeopen' => new external_value(PARAM_INT, 'section id'),
+                'timeclose' => new external_value(PARAM_INT, 'section id'),
+                'duration_hours' => new external_value(PARAM_INT, 'section id'),
+                'duration_min' => new external_value(PARAM_INT, 'section id'),
+                'israndom' => new external_value(PARAM_INT, 'section id'),
+                'stealth' => new external_value(PARAM_INT, 'section id'),
+                'questioncategids' => new external_multiple_structure(
+                    new external_single_structure(
+                        array(
+                            'id' => new external_value(PARAM_INT, 'category id'),
+                            'maxquestions' => new external_value(PARAM_RAW, 'maxquestions')
+                        )
+                        )
+                )
+            )
+        );
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 3.0
+     */
+    public static function create_quiz_random_returns() {
         return new external_single_structure(
                 array(
                     'moduleid' => new external_value(PARAM_INT, 'moduleid of the resource'),
@@ -686,7 +763,7 @@ class local_modcustomfields_external extends external_api {
             $blockinstance->blockname = "progress";
             $blockinstance->parentcontextid = $context->id;
             $blockinstance->showinsubcontexts = false;
-            $blockinstance->defaultregion = "content";
+            $blockinstance->defaultregion = "side-pre";
             $blockinstance->pagetypepattern = "course-view-*";
             $blockinstance->defaultweight = 0;
             $blockinstance->configdata = $configdata;
@@ -699,7 +776,7 @@ class local_modcustomfields_external extends external_api {
         $blockinstance->blockname = "activity_modules";
         $blockinstance->parentcontextid = $context->id;
         $blockinstance->showinsubcontexts = false;
-        $blockinstance->defaultregion = "content";
+        $blockinstance->defaultregion = "side-pre";
         $blockinstance->pagetypepattern = "course-view-*";
         $blockinstance->defaultweight = 0;
         $blockinstance->timecreated = time();
@@ -1287,7 +1364,7 @@ class local_modcustomfields_external extends external_api {
                         JOIN {course_modules} cm on  cm.id = con.instanceid                        
                         JOIN {quiz} quiz on quiz.id = cm.instance
                         JOIN {quiz_attempts}  qa on qa.quiz = quiz.id
-                        WHERE " . $DB->sql_compare_text('questiontext') . " = '$questionname'
+                        WHERE " . $DB->sql_compare_text('name') . " = '$questionname'
                         AND qa.uniqueid = $attemptuniqueid";
         $questions = $DB->get_records_sql($questionssql);
         foreach($questions as $questionid => $question){
@@ -1343,18 +1420,19 @@ class local_modcustomfields_external extends external_api {
 
     public static function generate_questionnaire_responses($questionnaireid, $userid, $time, $questions){
         global $DB;
-        $questionnaire = $DB->get_record('questionnaire', array('id' => $questionnaireid));
+        $questionnaire = $DB->get_record('questionnaire', array('sid' => $questionnaireid));
         $responses = [];
         foreach($questions as $question){
             $sql = ' SELECT * 
                       FROM {questionnaire_question}
-                      WHERE surveyid = ? AND position = ?  AND ' . $DB->sql_compare_text('content') . ' = ?';
-            $values = [$questionnaireid, $question["position"], $question["name"]];
+                      WHERE surveyid = ? AND ' . $DB->sql_compare_text('name') . ' = ?';
+            $values = [$questionnaire->sid , substr($question["name"], 0, 40)];
+            # intval($question["position"])
             foreach ($DB->get_records_sql($sql, $values) as $instance) {
                 $quest = $instance;
                 break;
             }
-            //$quest = $DB->get_record('questionnaire_question', array('content' => $DB->sql_compare_text($question["name"])));            
+            //$quest = $DB->get_record('questionnaire_question', array('content' => $DB->sql_compare_text($question["name"])));   
             switch($quest->type_id){
                 case "8": // rate
                     $options = explode(";;;", $question["values"]);
@@ -1506,10 +1584,12 @@ class local_modcustomfields_external extends external_api {
 
                 $params = [intval($question->id), $choiceval,  "!other=" . $choiceval];
                 $rs = $DB->get_records_sql("SELECT * FROM {questionnaire_quest_choice} $select", $params, 0, 1);
+                
 
                 $choice = reset($rs);
                 if (!$choice) {
                     var_dump("SELECT * FROM {questionnaire_quest_choice} $select");
+                    var_dump($params);
                     throw new coding_exception('Could not find choice for "'.$choiceval.
                         '" (question_id = '.$question->id.')', var_export($choiceval, true));
                 }
