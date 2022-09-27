@@ -200,6 +200,7 @@ class course_renderer extends \core_course_renderer {
 
         $courseprogress = $courseutil->get_progress();
         $hasprogress = $courseprogress != null;
+        global $CFG;
 
         $data = [
             'id' => $course->id,
@@ -209,13 +210,15 @@ class course_renderer extends \core_course_renderer {
             'summary' => $courseutil->get_summary($chelper),
             'category' => $courseutil->get_category(),
             'customfields' => $courseutil->get_custom_fields(),
-            'hasprogress' => $hasprogress,
-            'progress' => (int) $courseprogress,
+            'hasprogress' => true,#$hasprogress,
+            'progress' => (int) 30,#$courseprogress,
             'hasenrolmenticons' => $courseenrolmenticons != false,
             'enrolmenticons' => $courseenrolmenticons,
             'hascontacts' => !empty($coursecontacts),
-            'contacts' => $coursecontacts
+            'contacts' => $coursecontacts,
+            'config' => $CFG
         ];
+        var_dump($data);
 
         return $this->render_from_template('theme_moove/moove_coursecard', $data);
     }

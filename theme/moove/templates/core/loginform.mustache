@@ -92,7 +92,26 @@
         "languagemenu": "Choose language"
     }
 }}
-<div class="loginform row {{#hastwocolumns}}hastwocolumns{{/hastwocolumns}}">
+<div class="container-fluid">
+    <section class="section" aria-describedby="titleEx1">
+        <div class="section-content">
+            <div class="container">
+            <div class="row mb-3">
+                <div class="col-12">
+                <h2 id="titleEx1">{{{sitename}}}</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 pe-0 pe-md-5 font-serif">
+                {{{sitedescription}}}
+                </div>
+            </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="loginform row {{#hastwocolumns}}hastwocolumns{{/hastwocolumns}}">test0
     <div class="{{#hastwocolumns}}col-lg-6 col-md-12 left-column{{/hastwocolumns}}{{^hastwocolumns}}col{{/hastwocolumns}}">
         {{#logourl}}
             <div id="loginlogo" class="login-logo">
@@ -154,7 +173,7 @@
             {{/cansignup}}
         </form>
         {{^hastwocolumns}}
-            {{#canloginasguest}}
+            {{#canloginasguest}}test1
                 <form action="{{loginurl}}" method="post" id="guestlogin" class="mt-2">
                     <input type="hidden" name="logintoken" value="{{logintoken}}">
                     <input type="hidden" name="username" value="guest" />
@@ -180,7 +199,7 @@
         <div class="col-lg-6 col-md-12 right-column">
             <div class="column-content">
                 {{#hasidentityproviders}}
-                    <div class="login-identityproviders">
+                    <div class="login-identityproviders">test2
                         <p class="login-heading text-center">{{#str}}signinwith, theme_moove{{/str}}</p>
                         {{#identityproviders}}
                             <a class="btn login-identityprovider-btn btn-block {{#isfacebook}}facebook{{/isfacebook}}" href="{{url}}">
@@ -222,6 +241,13 @@
         </div>
     {{/hastwocolumns}}
 </div>
+
+
+<script>window.__PUBLIC_PATH__ = '{{config.wwwroot}}/theme/moove/bootstrap-italia-my/fonts'</script>
+<script src="{{config.wwwroot}}/theme/moove/bootstrap-italia-my/js/bootstrap-italia.bundle.min.js"></script>
+<a href="#" aria-hidden="true" data-bs-toggle="backtotop" class="back-to-top">
+    <svg class="icon icon-light"><use href="{{config.wwwroot}}/theme/moove/bootstrap-italia-my/svg/sprites.svg#it-arrow-up"></use></svg>
+</a>
 
 {{#js}}
     {{^error}}

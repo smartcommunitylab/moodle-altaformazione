@@ -41,14 +41,15 @@
         <div class="card-footer dashboard-card-footer menu border-0 bg-white ml-auto">
             {{> block_myoverview/course-action-menu }}
         </div>
-    {{/menu}}
+    {{/menu}}test
     {{$progress}}
-        {{#hasprogress}}
-            <div class="card-footer dashboard-card-footer border-0 bg-white w-100">
-                {{> block_myoverview/progress-bar}}
-            </div>
-        {{/hasprogress}}
+        <div class="card-footer dashboard-card-footer border-0 bg-white w-100">
+            {{> block_myoverview/progress-bar}}
+        </div>
     {{/progress}}
+    {{$progress2}}
+            {{> theme_moove/block_myoverview/progress-bar}}
+    {{/progress2}}
     {{$coursename}}
         <span class="multiline">
             {{#shortentext}}50, {{{fullname}}} {{/shortentext}}

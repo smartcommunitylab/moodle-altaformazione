@@ -34,9 +34,11 @@
 <body {{{ bodyattributes }}}>
 {{> core/local/toast/wrapper}}
 
-<div id="page-wrapper">
+<div>
 
     {{{ output.standard_top_of_body_html }}}
+
+    {{> theme_moove/navbar }}
 
     <div id="page" class="container-fluid mt-0">
         <div id="page-content" class="row">
@@ -52,11 +54,9 @@
         </div>
     </div>
 </div>
+{{> theme_moove/footer }}
 
-<div class="d-none">
-    {{{ output.standard_footer_html }}}
-    {{{ output.standard_end_of_body_html }}}
-</div>
+
 </body>
 </html>
 

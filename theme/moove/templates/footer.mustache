@@ -32,183 +32,96 @@
     }
 }}
 
-<footer id="page-footer">
-    <div class="moove-container-fluid footer-columns">
-        <div class="row">
-            <div class="col-md-4 column-left">
-                <div class="contact">
-                    <h3 class="footer-title">{{#str}}contactus, theme_moove{{/str}}</h3>
+<footer class="it-footer">
+    <div class="it-footer-main">
+      <div class="container">
+        <section>
+          <div class="row">
+            <div class="col-lg-3 col-md-3 col-sm-6 pb-2">
+              <h4>
+                <a href="#" title="Vai alla pagina: Amministrazione">Amministrazione</a>
+              </h4>
+              <div class="link-list-wrapper">
+                <ul class="footer-list link-list clearfix">
 
-                    <ul>
-                        {{#website}}
-                            <li>
-                                <a href="{{{website}}}" target="_blank" class="website btn btn-link">
-                                    <i class="fa fa-globe"></i>
-                                </a>
-                            </li>
-                        {{/website}}
-                        {{#mobile}}
-                            <li>
-                                <a href="tel:{{{mobile}}}" target="_blank" class="mobile btn btn-link">
-                                    <i class="fa fa-phone"></i>
-                                </a>
-                            </li>
-                        {{/mobile}}
-                        {{#mail}}
-                            <li>
-                                <a href="mailto:{{{mail}}}" target="_blank" class="mail btn btn-link">
-                                    <i class="fa fa-envelope"></i>
-                                </a>
-                            </li>
-                        {{/mail}}
-                    </ul>
-                </div>
-
-                <div class="socialnetworks">
-                    <h3 class="footer-title">{{#str}}followus, theme_moove{{/str}}</h3>
-
-                    <ul class="mb-0">
-                        {{#facebook}}
-                            <li>
-                                <a href="{{{facebook}}}" target="_blank" class="facebook btn btn-link btn-rounded">
-                                    <i class="fa fa-facebook"></i>
-                                </a>
-                            </li>
-                        {{/facebook}}
-
-                        {{#twitter}}
-                            <li>
-                                <a href="{{{twitter}}}" target="_blank" class="twitter btn btn-link btn-rounded">
-                                    <i class="fa fa-twitter"></i>
-                                </a>
-                            </li>
-                        {{/twitter}}
-
-                        {{#linkedin}}
-                            <li>
-                                <a href="{{{linkedin}}}" target="_blank" class="linkedin btn btn-link btn-rounded">
-                                    <i class="fa fa-linkedin"></i>
-                                </a>
-                            </li>
-                        {{/linkedin}}
-
-                        {{#youtube}}
-                            <li>
-                                <a href="{{{youtube}}}" target="_blank" class="youtube btn btn-link btn-rounded">
-                                    <i class="fa fa-youtube"></i>
-                                </a>
-                            </li>
-                        {{/youtube}}
-
-                        {{#instagram}}
-                            <li>
-                                <a href="{{{instagram}}}" target="_blank" class="instagram btn btn-link btn-rounded">
-                                    <i class="fa fa-instagram"></i>
-                                </a>
-                            </li>
-                        {{/instagram}}
-
-                        {{#whatsapp}}
-                            <li>
-                                <a href="https://api.whatsapp.com/send?phone={{{whatsapp}}}" target="_blank" class="whatsapp btn btn-link btn-rounded">
-                                    <i class="fa fa-whatsapp"></i>
-                                </a>
-                            </li>
-                        {{/whatsapp}}
-
-                        {{#telegram}}
-                            <li>
-                                <a href="{{{telegram}}}" target="_blank" class="telegram btn btn-link btn-rounded">
-                                    <i class="fa fa-telegram"></i>
-                                </a>
-                            </li>
-                        {{/telegram}}
-                    </ul>
-                </div>
+                  <li><a class="list-item" href="#"
+                      title="Vai alla pagina: Associazioni e società partecipate">Associazioni e società partecipate</a>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div class="col-md-4 column-center">
-                {{# output.supportemail }}
-                    <div class="supportemail">{{{ output.supportemail }}}</div>
-                {{/ output.supportemail }}
-
-                {{{ output.login_info }}}
-
-                {{{ output.standard_footer_html }}}
-
-                <div class="tool_usertours-resettourcontainer"></div>
+            <div class="col-lg-3 col-md-3 col-sm-6 pb-2">
+              <h4>
+                <a href="#" title="Vai alla pagina: Servizi">Servizi</a>
+              </h4>
+              <div class="link-list-wrapper">
+                <ul class="footer-list link-list clearfix">
+                  <li><a class="list-item" href="#" title="Vai alla pagina: Certificati e dichiarazioni">Certificati e
+                      dichiarazioni</a></li>
+                </ul>
+              </div>
             </div>
-            <div class="col-md-4 column-right">
-                {{#enablemobilewebservice}}
-                    {{#mobilesetuplink}}
-                        <a href="{{{mobilesetuplink}}}">{{#str}}getmoodleonyourmobile, tool_mobile{{/str}}</a>
-                    {{/mobilesetuplink}}
-                    {{^mobilesetuplink}}
-                        <h3 class="footer-title">{{#str}}getmoodleonyourmobile, tool_mobile{{/str}}</h3>
-                    {{/mobilesetuplink}}
-                    <div class="stores">
-                        {{#androidappid}}
-                            <a href="https://play.google.com/store/apps/details?id={{androidappid}}">
-                                <img src="{{config.wwwroot}}/theme/moove/pix/store_google.svg" alt="Play Store">
-                            </a>
-                        {{/androidappid}}
-                        {{#iosappid}}
-                            <a class="mt-1" href="https://apps.apple.com/app/id{{iosappid}}">
-                                <img src="{{config.wwwroot}}/theme/moove/pix/store_apple.svg" alt="App Store">
-                            </a>
-                        {{/iosappid}}
-                    </div>
-                {{/enablemobilewebservice}}
+            <div class="col-lg-3 col-md-3 col-sm-6 pb-2">
+              <h4>
+                <a href="#" title="Vai alla pagina: Novità">Novità</a>
+              </h4>
+              <div class="link-list-wrapper">
+                <ul class="footer-list link-list clearfix">
+                  <li><a class="list-item" href="#" title="Vai alla pagina: Notizie">Notizie</a></li>
+                  <li><a class="list-item" href="#" title="Vai alla pagina: Eventi">Eventi</a></li>
+                  <li><a class="list-item" href="#" title="Vai alla pagina: Comunicati stampa">Comunicati stampa</a>
+                  </li>
+                </ul>
+              </div>
             </div>
-        </div>
-    </div>
-
-    <div class="footer-content-debugging footer-dark bg-dark text-light">
-        <div class="moove-container-fluid footer-dark-inner">
-            {{{ output.debug_footer_html }}}
-        </div>
-    </div>
-
-    <div data-region="footer-container-popover">
-        <button class="btn btn-icon bg-secondary icon-no-margin btn-footer-popover" data-action="footer-popover" aria-label="{{#str}}showfooter, theme_boost{{/str}}">
-            {{#pix}}e/question, core{{/pix}}
-        </button>
-    </div>
-    <div class="footer-content-popover container" data-region="footer-content-popover">
-        {{# output.has_popover_links }}
-            <div class="footer-section p-3 border-bottom">
-                {{# output.page_doc_link }}
-                    <div>{{{ output.page_doc_link }}}</div>
-                {{/ output.page_doc_link }}
-
-                {{# output.services_support_link }}
-                    <div>{{{ output.services_support_link }}}</div>
-                {{/ output.services_support_link }}
+            <div class="col-lg-3 col-md-3 col-sm-6">
+              <h4>
+                <a href="#" title="Vai alla pagina: Documenti">Documenti</a>
+              </h4>
+              <div class="link-list-wrapper">
+                <ul class="footer-list link-list clearfix">
+                  <li><a class="list-item" href="#" title="Vai alla pagina: Concorsi">Concorsi</a></li>
+                  <li><a class="list-item" href="#" title="Vai alla pagina: Albo pretorio">Albo pretorio</a></li>
+                </ul>
+              </div>
             </div>
-        {{/ output.has_popover_links }}
-        <div class="footer-section p-3">
-            <div>{{#str}}poweredbymoodle, core{{/str}}</div>
-            {{#output.moodle_release}}
-                <div>
-                    {{#str}}version, core{{/str}} {{{ output.moodle_release }}}
-                </div>
-            {{/output.moodle_release}}
-        </div>
+          </div>
+        </section>
+        <section class="py-4 border-white border-top">
+          <div class="row">
+            <div class="col-lg-4 col-md-4 pb-2">
+              <h4><a href="#" title="Vai alla pagina: Contatti">Contatti</a></h4>
+              <p>
+                <strong>Formazione a distanza</strong><br />
+              </p>
+              <div class="link-list-wrapper">
+                <ul class="footer-list link-list clearfix">
+                  <li><a class="list-item" href="#" title="Vai alla pagina: Posta Elettronica Certificata">Posta
+                      Elettronica Certificata</a></li>
+                  <li>
+                    <a class="list-item" href="#" title="Vai alla pagina: URP - Ufficio Relazioni con il Pubblico">URP -
+                      Ufficio Relazioni con il Pubblico</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+           
+          </div>
+        </section>
+      </div>
     </div>
-
-    <div class="copyright">
-        <div class="madeby">
-            <p>{{#str}}themedevelopedby, theme_moove{{/str}}</p>
-            <a href="https://conecti.me">
-                <img src="{{config.wwwroot}}/theme/moove/pix/logo_conectime.svg" alt="Conecti.me" style="height: 40px;">
-            </a>
-        </div>
+    <div class="it-footer-small-prints clearfix">
+      <div class="container">
+        <h3 class="visually-hidden">Sezione Link Utili</h3>
+        <ul class="it-footer-small-prints-list list-inline mb-0 d-flex flex-column flex-md-row">
+          <li class="list-inline-item"><a href="#" title="Note Legali">Media policy</a></li>
+          <li class="list-inline-item"><a href="#" title="Note Legali">Note legali</a></li>
+          <li class="list-inline-item"><a href="#" title="Privacy-Cookies">Privacy policy</a></li>
+          <li class="list-inline-item"><a href="#" title="Mappa del sito">Mappa del sito</a></li>
+        </ul>
+      </div>
     </div>
-</footer>
+  </footer>
 
 {{{ output.standard_end_of_body_html }}}
 
-{{#js}}
-    require(['theme_boost/footer-popover'], function(FooterPopover) {
-        FooterPopover.init();
-    });
-{{/js}}

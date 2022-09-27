@@ -4,7 +4,7 @@
 }
 
 #page.drawers {
-    padding: 0 15px;
+    padding: 0 0px;
     height: initial;
 
     .main-inner {
@@ -65,12 +65,12 @@
 body.has-secondarynavigation {
     #page,
     #page.drawers {
-        margin-top: 130px;
+        margin-top: 5px;
     }
 
     .drawer-toggles .drawer-toggler {
         position: fixed;
-        top: 140px;
+        top: 230px;
     }
 }
 
@@ -88,7 +88,7 @@ body.has-secondarynavigation {
     body.has-secondarynavigation {
         .drawer-left,
         .drawer-right {
-            top: calc(130px + 1px);
+            top: calc(230px + 1px);
             height: calc(100vh - 130px);
         }
     }

@@ -32,7 +32,24 @@
         }
     }
 }
-
+.card-wrapper {
+    padding-bottom: 8px * 3;
+    display: flex;
+  
+    .card-column {
+      flex-direction: column;
+  
+      .card {
+        height: auto !important;
+  
+        .card {
+          margin-top: 1rem;
+        }
+      }
+    }
+}
+  
+  
 @include media-breakpoint-down(md) {
     .pagelayout-mydashboard {
         #block-region-content {

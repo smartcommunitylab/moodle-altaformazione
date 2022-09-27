@@ -55,7 +55,7 @@
 {{> theme_moove/accessibilitybar }}
 
 {{> core/local/toast/wrapper}}
-<div id="page-wrapper" class="d-print-block">
+<div  class="d-print-block">
 
     {{{ output.standard_top_of_body_html }}}
 
@@ -174,6 +174,12 @@
     </div>
     {{{ output.standard_after_main_region_html }}}
 </div>
+
+<script>window.__PUBLIC_PATH__ = '{{config.wwwroot}}/theme/moove/bootstrap-italia-my/fonts'</script>
+<script src="{{config.wwwroot}}/theme/moove/bootstrap-italia-my/js/bootstrap-italia.bundle.min.js"></script>
+<a href="#" aria-hidden="true" data-bs-toggle="backtotop" class="back-to-top">
+<svg class="icon icon-light"><use href="{{config.wwwroot}}/theme/moove/bootstrap-italia-my/svg/sprites.svg#it-arrow-up"></use></svg>
+</a>
 
 </body>
 </html>
