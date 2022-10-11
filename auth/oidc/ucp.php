@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * User control panel page.
+ *
  * @package auth_oidc
  * @author James McQuillan <james.mcquillan@remote-learner.net>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -34,12 +36,13 @@ $oidcconnected = (!empty($oidctoken)) ? true : false;
 
 $oidcloginconnected = ($USER->auth === 'oidc') ? true : false;
 
+if (!is_enabled_auth('oidc')) {
+    throw new \moodle_exception('erroroidcnotenabled', 'auth_oidc');
+}
+
 if (!empty($action)) {
     if ($action === 'connectlogin' && $oidcloginconnected === false) {
         // Use authorization request login flow to connect existing users.
-        if (!is_enabled_auth('oidc')) {
-            throw new \moodle_exception('erroroidcnotenabled', 'auth_oidc');
-        }
         auth_oidc_connectioncapability($USER->id, 'connect', true);
         $auth = new \auth_oidc\loginflow\authcode;
         $auth->set_httpclient(new \auth_oidc\httpclient());

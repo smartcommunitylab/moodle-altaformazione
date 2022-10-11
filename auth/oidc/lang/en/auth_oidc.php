@@ -27,10 +27,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'OpenID Connect';
-$string['auth_oidcdescription'] = 'The OpenID Connect plugin provides single-sign-on functionality using configurable identity providers.';
+$string['auth_oidcdescription'] = 'The OpenID Connect authentication plugin provides single-sign-on functionality using configurable identity providers.';
 
 $string['cfg_authendpoint_key'] = 'Authorization Endpoint';
-$string['cfg_authendpoint_desc'] = 'The URI of the Authorization endpoint from your identity provider to use.';
+$string['cfg_authendpoint_desc'] = 'The URI of the Authorization endpoint from your identity provider to use.<br/>
+Note if the site is to be configured to allow users from other tenants to access, tenant specific authorization endpoint cannot be used.';
 $string['cfg_autoappend_key'] = 'Auto-Append';
 $string['cfg_autoappend_desc'] = 'Automatically append this string when logging in users using the "Resource Owner Password Credentials" authentication method. This is useful when your identity provider requires a common domain, but don\'t want to require users to type it in when logging in. For example, if the full OpenID Connect user is "james@example.com" and you enter "@example.com" here, the user will only have to enter "james" as their username. <br /><b>Note:</b> In the case where conflicting usernames exist - i.e. a Moodle user exists wth the same name, the priority of the authentication plugin is used to determine which user wins out.';
 $string['cfg_clientid_key'] = 'Client ID';
@@ -80,20 +81,29 @@ $string['cfg_opname_desc'] = 'This is an end-user-facing label that identifies t
 $string['cfg_redirecturi_key'] = 'Redirect URI';
 $string['cfg_redirecturi_desc'] = 'This is the URI to register as the "Redirect URI". Your OpenID Connect identity provider should ask for this when registering Moodle as a client. <br /><b>NOTE:</b> You must enter this in your OpenID Connect provider *exactly* as it appears here. Any difference will prevent logins using OpenID Connect.';
 $string['cfg_tokenendpoint_key'] = 'Token Endpoint';
-$string['cfg_tokenendpoint_desc'] = 'The URI of the token endpoint from your identity provider to use.';
+$string['cfg_tokenendpoint_desc'] = 'The URI of the token endpoint from your identity provider to use.<br/>
+Note if the site is to be configured to allow users from other tenants to access, tenant specific token endpoint cannot be used.';
 $string['cfg_userrestrictions_key'] = 'User Restrictions';
 $string['cfg_userrestrictions_desc'] = 'Only allow users to log in that meet certain restrictions. <br /><b>How to use user restrictions: </b> <ul><li>Enter a <a href="https://en.wikipedia.org/wiki/Regular_expression">regular expression</a> pattern that matches the usernames of users you want to allow.</li><li>Enter one pattern per line</li><li>If you enter multiple patterns a user will be allowed if they match ANY of the patterns.</li><li>The character "/" should be escaped with "\".</li><li>If you don\'t enter any restrictions above, all users that can log in to the OpenID Connect provider will be accepted by Moodle.</li><li>Any user that does not match any entered pattern(s) will be prevented from logging in using OpenID Connect.</li></ul>';
 $string['cfg_userrestrictionscasesensitive_key'] = 'User Restrictions Case Sensitive';
 $string['cfg_userrestrictioncasesensitive_desc'] = 'This controls if the "/i" option in regular expression is used in the user restriction match.<br/>If enabled, all user restriction checks will be performed as with case sensitive. Note if this is disabled, any patterns on letter cases will be ignored.';
-$string['cfg_signoffintegration_key'] = 'Single sign off';
-$string['cfg_signoffintegration_desc'] = 'If enabled, when a Moodle user using OIDC authentication method signs off from Moodle, Moodle will attempt to log the user off from Office 365 as well.
-
-Note the URL of Moodle site ({$a}) needs to be added as a redirect URI in the Azure app created for Moodle Office 365 integration.';
+$string['cfg_signoffintegration_key'] = 'Single sign out';
+$string['cfg_signoffintegration_desc'] = 'If the option is enabled, when a Moodle user connected to the configured IdP logs out of Moodle, the integration will trigger a request at the logout endpiont below, attempting to log the user off from IdP as well.<br/>
+Note for integration with Microsoft Azure AD, the URL of Moodle site ({$a}) needs to be added as a redirect URI in the Azure app created for Moodle and Microsoft 365 integration.';
 $string['cfg_logoutendpoint_key'] = 'Logout Endpoint';
 $string['cfg_logoutendpoint_desc'] = 'The URI of the logout endpoint from your identity provider to use.';
+$string['cfg_frontchannellogouturl_key'] = 'Front-channel Logout URL';
+$string['cfg_frontchannellogouturl_desc'] = 'This is the URL that your IdP needs to trigger when it tries to log users out of Moodle.<br/>
+For Microsoft Azure AD, the setting is called "Front-channel logout URL" and is configurable in the Azure app.';
 $string['cfg_tools'] = 'Tools';
 $string['cfg_cleanupoidctokens_key'] = 'Cleanup OpenID Connect Tokens';
 $string['cfg_cleanupoidctokens_desc'] = 'If your users are experiencing problems logging in using their Microsoft 365 account, trying cleaning up OpenID Connect tokens. This removes stray and incomplete tokens that can cause errors. WARNING: This may interrupt logins in-process, so it\'s best to do this during downtime.';
+$string['cfg_field_mapping_desc'] = 'User profile data can be mapped from Open ID Connect identity providers (IdP) to Moodle.<br/>
+<ul>
+<li>Basic profile data is available from ID tokens from all IdP.</li>
+<li>If Azure AD is used as the IdP, additional profile data can be made available by installing and configuring the <a href="https://moodle.org/plugins/local_o365">Microsoft 365 integration plugin (local_o365)</a>.</li>
+<li>If SDS profile sync feature is enabled in the local_o365 plugin, certain profile fields can be synchronised from SDS to Moodle. when running the "Sync with SDS" scheduled task, and will not happen when running the "Sync users with Azure AD" scheduled task, nor when user logs in.</li>
+</ul>';
 
 $string['event_debug'] = 'Debug message';
 
@@ -181,6 +191,7 @@ $string['ucp_disconnect_details'] = 'This will disconnect your Moodle account fr
 $string['ucp_title'] = '{$a} Management';
 $string['ucp_o365accountconnected'] = 'This Microsoft 365 account is already connected with another Moodle account.';
 
+// Clean up OIDC tokens.
 $string['cleanup_oidc_tokens'] = 'Cleanup OpenID Connect tokens';
 $string['unmatched'] = 'Unmatched';
 $string['delete_token'] = 'Delete token';
@@ -198,3 +209,49 @@ $string['token_deleted'] = 'Token was deleted successfully';
 $string['no_token_to_cleanup'] = 'There are no OIDC token to cleanup.';
 
 $string['errorusermatched'] = 'The Microsoft 365 account "{$a->aadupn}" is already matched with Moodle user "{$a->username}". To complete the connection, please log in as that Moodle user first and follow the instructions in the Microsoft block.';
+
+// User mapping options.
+$string['update_oncreate_and_onlogin'] = 'On creation and every login';
+$string['update_oncreate_and_onlogin_and_usersync'] = 'On creation, every login, and every user sync task run';
+$string['update_onlogin_and_usersync'] = 'On every login and every user sync task run';
+
+// Remote fields.
+$string['settings_fieldmap_feild_not_mapped'] = '(not mapped)';
+$string['settings_fieldmap_field_city'] = 'City';
+$string['settings_fieldmap_field_companyName'] = 'Company Name';
+$string['settings_fieldmap_field_objectId'] = 'Object ID';
+$string['settings_fieldmap_field_country'] = 'Country';
+$string['settings_fieldmap_field_department'] = 'Department';
+$string['settings_fieldmap_field_displayName'] = 'Display Name';
+$string['settings_fieldmap_field_surname'] = 'Surname';
+$string['settings_fieldmap_field_faxNumber'] = 'Fax Number';
+$string['settings_fieldmap_field_telephoneNumber'] = 'Telephone Number';
+$string['settings_fieldmap_field_givenName'] = 'Given Name';
+$string['settings_fieldmap_field_jobTitle'] = 'Job Title';
+$string['settings_fieldmap_field_mail'] = 'Email';
+$string['settings_fieldmap_field_mobile'] = 'Mobile';
+$string['settings_fieldmap_field_postalCode'] = 'Postal Code';
+$string['settings_fieldmap_field_preferredLanguage'] = 'Language';
+$string['settings_fieldmap_field_state'] = 'State';
+$string['settings_fieldmap_field_streetAddress'] = 'Street Address';
+$string['settings_fieldmap_field_userPrincipalName'] = 'Username (UPN)';
+$string['settings_fieldmap_field_employeeId'] = 'Employee ID';
+$string['settings_fieldmap_field_businessPhones'] = 'Office phone';
+$string['settings_fieldmap_field_mobilePhone'] = 'Mobile phone';
+$string['settings_fieldmap_field_officeLocation'] = 'Office';
+$string['settings_fieldmap_field_preferredName'] = 'Preferred Name';
+$string['settings_fieldmap_field_manager'] = 'Manager';
+$string['settings_fieldmap_field_teams'] = 'Teams';
+$string['settings_fieldmap_field_groups'] = 'Groups';
+$string['settings_fieldmap_field_roles'] = 'Roles';
+$string['settings_fieldmap_field_extensionattribute'] = 'Extension attribute {$a}';
+$string['settings_fieldmap_field_sds_school_id'] = 'SDS school ID ({$a})';
+$string['settings_fieldmap_field_sds_school_name'] = 'SDS school name ({$a})';
+$string['settings_fieldmap_field_sds_school_role'] = 'SDS school role ("Student" or "Teacher")';
+$string['settings_fieldmap_field_sds_student_externalId'] = 'SDS student external ID';
+$string['settings_fieldmap_field_sds_student_birthDate'] = 'SDS student birth date';
+$string['settings_fieldmap_field_sds_student_grade'] = 'SDS student grade';
+$string['settings_fieldmap_field_sds_student_graduationYear'] = 'SDS student graduation year';
+$string['settings_fieldmap_field_sds_student_studentNumber'] = 'SDS student number';
+$string['settings_fieldmap_field_sds_teacher_externalId'] = 'SDS teacher external ID';
+$string['settings_fieldmap_field_sds_teacher_teacherNumber'] = 'SDS teacher number';

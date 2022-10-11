@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * JWT test cases.
+ *
  * @package auth_oidc
  * @author James McQuillan <james.mcquillan@remote-learner.net>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
 /**
- * Tests jwt
+ * Tests jwt.
  *
  * @group auth_oidc
  * @group office365
@@ -35,7 +37,7 @@ class auth_oidc_jwt_testcase extends \advanced_testcase {
     /**
      * Perform setup before every test. This tells Moodle's phpunit to reset the database after every test.
      */
-    protected function setUp() {
+    protected function setUp():void {
         parent::setUp();
         $this->resetAfterTest(true);
     }

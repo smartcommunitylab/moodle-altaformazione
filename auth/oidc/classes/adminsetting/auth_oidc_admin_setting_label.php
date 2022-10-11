@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Definition of a label admin setting control.
+ *
  * @package auth_oidc
  * @author Lai Wei <lai.wei@enovation.ie>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,19 +31,21 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Display a static text.
- *
- * @package auth_oidc\adminsetting
  */
 class auth_oidc_admin_setting_label extends admin_setting {
+    private $label;
+
     /**
-     * auth_oidc_admin_setting_static constructor.
+     * Constructor.
      *
      * @param $name
+     * @param $label
      * @param $visiblename
      * @param $description
      */
-    public function __construct($name, $visiblename, $description) {
+    public function __construct($name, $label, $visiblename, $description) {
         parent::__construct($name, $visiblename, $description, '');
+        $this->label = $label;
     }
 
     /**
@@ -73,6 +77,6 @@ class auth_oidc_admin_setting_label extends admin_setting {
      * @return string
      */
     public function output_html($data, $query = '') {
-        return format_admin_setting($this, get_string('cfg_tools', 'auth_oidc'), $this->visiblename, $this->description, false);
+        return format_admin_setting($this, $this->label, $this->visiblename, $this->description, false);
     }
 }
