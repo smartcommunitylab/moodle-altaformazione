@@ -36,6 +36,15 @@ body {
     box-shadow: 0 0 35px 0 rgba(154, 161, 171, 0.15);
 }
 
+.form-control{
+    height: calc(1.5em + 0.75rem + 10px);
+}
+
+.fa-ellipsis-v:before {
+    padding-left: 15px;
+    content: ""; 
+}
+
 .moove-container-fluid,
 .container-fluid {
     max-width: 85%;

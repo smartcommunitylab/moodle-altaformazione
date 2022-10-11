@@ -37,11 +37,6 @@
             {{> block_myoverview/nav-display-selector }}
         {{/displaydropdown}}
     </div>
-    <div class="progress">
-        <div class="progress-bar bg-success" data-toggle="tooltip" data-placement="top" title="{{completed_courses_percentage}}% COMPLETATO" role="progressbar" aria-valuenow="{{completed_courses_percentage}}" style="width: {{completed_courses_percentage}}%" aria-valuemin="0" aria-valuemax="{{completed_courses_percentage}}"></div>
-        <div class="progress-bar bg-warning" data-toggle="tooltip" data-placement="top" title="{{inprogress_courses_percentage}}% IN CORSO" role="progressbar" aria-valuenow="{{inprogress_courses_percentage}}" style="width: {{inprogress_courses_percentage}}%" aria-valuemin="0" aria-valuemax="{{inprogress_courses_percentage}}"></div>
-        <div class="progress-bar bg-secondary" data-toggle="tooltip" data-placement="top" title="{{future_courses_percentage}}% DA INIZIARE" role="progressbar" aria-valuenow="{{future_courses_percentage}}" style="width: {{future_courses_percentage}}%" aria-valuemin="0" aria-valuemax="{{future_courses_percentage}}"></div>
-    </div>
     <div class="container-fluid p-0">
         {{> block_myoverview/courses-view }}
     </div>

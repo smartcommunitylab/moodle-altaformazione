@@ -210,15 +210,14 @@ class course_renderer extends \core_course_renderer {
             'summary' => $courseutil->get_summary($chelper),
             'category' => $courseutil->get_category(),
             'customfields' => $courseutil->get_custom_fields(),
-            'hasprogress' => true,#$hasprogress,
-            'progress' => (int) 30,#$courseprogress,
+            'hasprogress' => $hasprogress,
+            'progress' => (int) $courseprogress,
             'hasenrolmenticons' => $courseenrolmenticons != false,
             'enrolmenticons' => $courseenrolmenticons,
             'hascontacts' => !empty($coursecontacts),
             'contacts' => $coursecontacts,
             'config' => $CFG
         ];
-        var_dump($data);
 
         return $this->render_from_template('theme_moove/moove_coursecard', $data);
     }

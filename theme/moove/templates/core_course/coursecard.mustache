@@ -41,25 +41,31 @@
         data-course-id="{{{id}}}">
             <div class="card card-bg card-big no-after">
                 <div class="card-body">
-                    <div class="head-tags">
-                        <a href="#"></a>
-                        <span class="data">{{startdate_formatted}} - {{enddate_formatted}}</span>
-                    </div>
+                        <div class="head-tags">
+                            <a href="#"></a>
+                            {{#course_time_period}}
+                                <span class="data">{{#str}}accessible, theme_moove{{/str}} {{startdate_formatted}}  {{enddate_formatted}}</span>
+                            {{/course_time_period}}
+                        </div>
                     <h3 class="card-title h5 ">
                             <a href="{{viewurl}}" class="aalink coursename mr-2 mb-1">
                                 {{> core_course/favouriteicon }}
                                 <span class="sr-only">
                                         {{#str}}aria:coursename, core_course{{/str}}
-                                    </span>
-                                {{$coursename}}{{/coursename}}
+                                </span>
+                                {{fullnamedisplay}}
                             </a>
                     </h3>
                     <p class="card-text">{{$coursecategory}}{{/coursecategory}}</p>
                     {{$progress2}}{{/progress2}}
                     {{#competencies}}
+                    
                     <p>
-                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#multiCollapseExample1{{{id}}}" role="button" aria-expanded="false" aria-controls="multiCollapseExample1{{{id}}}">
-                        Competenze</a>
+                        <h6>
+                            <span class="badge badge-secondary btn-secondary" data-bs-toggle="collapse" href="#multiCollapseExample1{{{id}}}" role="button" aria-expanded="false" aria-controls="multiCollapseExample1{{{id}}}">
+                                {{#str}}showcompetencies, theme_moove{{/str}}
+                            </span>
+                        </h6>
                     </p>
                     <div class="row">
                         <div class="col">
