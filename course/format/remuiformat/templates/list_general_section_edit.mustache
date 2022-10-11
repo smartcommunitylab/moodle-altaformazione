@@ -51,31 +51,22 @@
     }
 }}
 <li id="section-0" class="first-section-li section main clearfix mb-25 mb-4" role="region" aria-label="{{{generalsectiontitlename}}}">
-   <div class="px-15 py-10 px-3 p-x-1 py-2 p-y-1 course-cover-image" style="background-image: linear-gradient(to right, rgba(14, 35, 53, 0.68), rgba(14, 35, 53, 0.68)), url({{{remuicourseimage}}});">
+   <div class="px-15 py-10 px-3 p-x-1 py-2 p-y-1 course-cover-image">
     {{#rightside}}
     <div class="right side">
         {{{rightside}}}
     </div>
     {{/rightside}}
-        <div class="text-white">
-            <h2 class="section-title">
-                {{{generalsectiontitle}}}
-            </h2>
-            <div class="font-size-14 summary">{{{ generalsectionsummary }}}</div>
+        <div class="text-blue">
+                <div class="font-size-24 mb-15 mb-3 wdm-generalsectiontitle">{{#str}}section0name, format_remuiformat{{/str}}</div>
         </div>
-        <div class="text-white mb-10 m-b-1 d-flex" style="justify-content: flex-end;">
-            {{#teachers}}
-                {{{teacherimg}}}
-            {{/teachers}}
-        </div>
-        {{#percentage}}
-            <div class="progress progress-square mb-0">
-                <div class="progress-bar bg-green-600" style="width: {{{percentage}}}%; height: 100%;" role="progressbar">
-                    <span class="sr-only">{{{percentage}}}% Complete</span>
-                </div>
+        <div class="progress progress-square mb-0">
+            <div class="progress-bar bg-green-600" style="width: {{{percentage}}}%; height: 100%;" role="progressbar">
+                <span><h4 style="margin-bottom: 2px;"><b>{{{percentage}}}%</b></h4></span>
             </div>
-        {{/percentage}}
+        </div>
    </div>
+
 
    <span class="hidden sectionname">{{{generalsectiontitlename}}}</span>
 
@@ -92,8 +83,11 @@
                                     <div class="{{{indent}}}"></div>
                                 {{/indent}}
                                 <div>
-                                    <div class="activityinstance p-0 d-inline-block">
+                                    <div class="activityinstance p-0 d-inline-block contentafterlink">
                                         {{{title}}}
+                                    </div>
+                                    <div data-region="sectionbadges" class="sectionbadges d-flex align-items-center {{^editing}}ml-2{{/editing}}">
+                                        {{> core_courseformat/local/content/section/badges }}
                                     </div>
                                     <div class="actions">
                                         {{{completion}}}

@@ -30,7 +30,16 @@ define ('REMUI_LIST_FORMAT', 1);
 /**
  * Cards Format - A topics based format that uses card layout to display the activities/section/topics.
  */
-class format_remuiformat extends format_base {
+class format_remuiformat extends core_courseformat\base {
+
+    /**
+     * Show course activity index on course page left sidebar.
+     *
+     * @return bool
+     */
+    public function uses_course_index() {
+        return true;
+    }
 
     /**
      * Creates a new instance of class
@@ -227,7 +236,7 @@ class format_remuiformat extends format_base {
                     'type' => PARAM_INT
                 ),
                 'hidegeneralsectionwhenempty' => array(
-                    'defult' => get_config('format_remuiformat', 'hidegeneralsectionwhenempty') || false,
+                    'default' => get_config('format_remuiformat', 'hidegeneralsectionwhenempty') || false,
                     'type' => PARAM_INT
                 ),
                 'coursedisplay' => array(
@@ -602,6 +611,9 @@ class format_remuiformat extends format_base {
     public function section_action($section, $action, $sr) {
         global $PAGE;
 
+        if ($action == 'deleteSection') {
+            return null;
+        }
         if ($section->section && ($action === 'setmarker' || $action === 'removemarker')) {
             // Format 'topics' allows to set and remove markers in addition to common section actions.
             require_capability('moodle/course:setcurrentsection', context_course::instance($this->courseid));

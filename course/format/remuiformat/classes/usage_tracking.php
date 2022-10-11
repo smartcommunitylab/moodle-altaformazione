@@ -75,19 +75,17 @@ class usage_tracking {
                     );
 
                     // Execute post.
-                    /*$result = curl_exec($ch);
+                    $result = curl_exec($ch);
                     if ($result) {
                         $resultarr = json_decode($result, 1);
                     }
                     // Close connection.
                     curl_close($ch);
-                    
 
                     // Save new timestamp, 7 days --- save only if api returned success.
                     if (isset($resultarr['success']) && $resultarr['success']) {
                         set_config('usage_data_last_sent_format_remuiformat', time() + 604800);
                     }
-                    */
                 }
             }
         }

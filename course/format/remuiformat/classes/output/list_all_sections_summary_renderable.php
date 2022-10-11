@@ -184,8 +184,7 @@ class format_remuiformat_list_all_sections_summary implements renderable, templa
             }
 
             // For right side.
-            $rightside = $renderer->section_right_content($generalsection, $this->course, false);
-            $export->generalsection['rightside'] = $rightside;
+            $export->generalsection['rightside'] = $this->courseformatdatacommontrait->course_section_controlmenu($this->course, $generalsection);
             $displayteacher = $this->settings['remuiteacherdisplay'];
             if ($displayteacher == 1) {
                 $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
@@ -251,13 +250,6 @@ class format_remuiformat_list_all_sections_summary implements renderable, templa
 
             // Add new activity.
             $export->generalsection['addnewactivity'] = $this->courserenderer->course_section_add_cm_control($this->course, 0, 0);
-            if ($export->generalsection['percentage'] != 100) {
-                // Get reseume activity link.
-                $activity_to_resume = $this->courseformatdatacommontrait->get_activity_to_resume($this->course);
-                $export->resumeactivityurl = $activity_to_resume["url"];
-                $export->resumeactivityname = $activity_to_resume["name"];
-                
-            }
         }
         $export->sections = $this->courseformatdatacommontrait->get_all_section_data(
             $renderer,

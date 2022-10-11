@@ -58,7 +58,7 @@ $string['hidegeneralsectionwhenempty_help'] = 'When general section does not hav
 // Section.
 $string['sectionname'] = 'Section';
 $string['sectionnamecaps'] = 'SECTION';
-$string['section0name'] = 'General';
+$string['section0name'] = 'Completion Progress';
 $string['hidefromothers'] = 'Hide section';
 $string['showfromothers'] = 'Show section';
 $string['viewtopic'] = 'View';
@@ -86,7 +86,6 @@ $string['changelayoutnotify'] = 'Refresh page to see changes.';
 $string['generalactivities'] = 'Activities';
 $string['coursecompletionprogress'] = 'Course Progress';
 $string['resumetoactivity'] = 'Resume';
-$string['lastactivity'] = 'Last accessed activity';
 
 // For list format.
 $string['remuicourseformat'] = 'Choose layout';
@@ -161,3 +160,5 @@ $string['enableusagetrackingdesc'] = "<strong>USAGE TRACKING NOTICE</strong>
 <p>Having said that we don't gather your personal data or of your students during this process. You can disable this from the plugin whenever you wish to opt out of this service.</p>
 
 <p>An overview of the data collected is available <strong><a href='https://forums.edwiser.org/topic/67/anonymously-tracking-the-usage-of-edwiser-products' target='_blank'>here</a></strong>.</p>";
+
+$string['unit_duration'] = 'Unit duration: ';

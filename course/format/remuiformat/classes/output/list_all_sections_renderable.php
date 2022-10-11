@@ -186,8 +186,7 @@ class format_remuiformat_list_all_sections implements renderable, templatable {
             }
 
             // For right side.
-            $rightside = $renderer->section_right_content($generalsection, $this->course, false);
-            $export->generalsection['rightside'] = $rightside;
+            $export->generalsection['rightside'] = $this->courseformatdatacommontrait->course_section_controlmenu($this->course, $generalsection);
             $displayteacher = $this->settings['remuiteacherdisplay'];
             if ($displayteacher == 1) {
                 $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
@@ -252,12 +251,7 @@ class format_remuiformat_list_all_sections implements renderable, templatable {
             }
             // Add new activity.
             $export->generalsection['addnewactivity'] = $this->courserenderer->course_section_add_cm_control($this->course, 0, 0);
-            if ($export->generalsection['percentage'] != 100) {
-                // Get reseume activity link.
-                $activity_to_resume = $this->courseformatdatacommontrait->get_activity_to_resume($this->course);
-                $export->resumeactivityurl = $activity_to_resume["url"];
-                $export->resumeactivityname = $activity_to_resume["name"];
-            }
+            
         }
         // Setting up data for remianing sections.
         $export->sections = $this->courseformatdatacommontrait->get_all_section_data(
@@ -269,5 +263,58 @@ class format_remuiformat_list_all_sections implements renderable, templatable {
             $this->courseformat,
             $this->courserenderer
         );
+        foreach($export->sections as $section){
+            $section->weight = $this->get_sum_activities_weights($section->id);
+            $section->sectioninprogress = $this->get_sum_completed_activities_weights($section->id, $section->weight);
+        }
+    }
+
+    public function get_sum_activities_weights($sectionid){
+        global $DB;
+        $hours = 0;
+        $mins = 0;
+        $weights = $DB->get_record_sql("
+            SELECT sum(intvalue) as total
+            FROM {customfield_data} d
+            INNER JOIN {customfield_field} f ON d.fieldid=f.id
+            INNER JOIN {course_modules} m ON d.instanceid = m.id
+            WHERE
+                f.shortname in ('duration_hours', 'duration_mins') AND m.section=?", array($sectionid));
+        if($weights){
+            $total = $weights->total;
+            if ($total != null){
+                $hours = intval($total/3600);
+                $mins = intval($total/60);
+                if ($mins >= 60)
+                    $mins = $mins - $hours  * 60;
+            }
+        }       
+        return $hours. "h ". str_pad($mins, 2, 0, STR_PAD_LEFT). "m";
+    }
+
+    public function get_sum_completed_activities_weights($sectionid, $allactivitiessum){
+        global $DB, $USER;
+        $hours = 0;
+        $mins = 0;
+        $weights = $DB->get_record_sql("
+            SELECT sum(intvalue) as total
+            FROM {customfield_data} d
+            INNER JOIN {customfield_field} f ON d.fieldid=f.id
+            INNER JOIN {course_modules} m ON d.instanceid = m.id
+            INNER JOIN {course_modules_completion} mc ON (mc.coursemoduleid = m.id )
+            WHERE
+                f.shortname in ('duration_hours', 'duration_mins') AND m.section=? AND mc.userid=? AND mc.completionstate=1", array($sectionid, $USER->id));
+        if($weights){
+            $total = $weights->total;
+            if ($total != null){
+                $hours = intval($total/3600);
+                $mins = intval($total/60);
+                if ($mins >= 60)
+                    $mins = $mins - $hours  * 60;
+            }
+        }  
+        $completed_activities = $hours. "h ". str_pad($mins, 2, 0, STR_PAD_LEFT). "m";
+        return  $completed_activities != $allactivitiessum && $completed_activities != "0h 00m";
     }
 }
+

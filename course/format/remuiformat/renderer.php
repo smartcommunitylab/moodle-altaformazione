@@ -25,10 +25,12 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/course/format/renderer.php');
 require_once($CFG->dirroot.'/course/format/remuiformat/classes/mod_stats.php');
 
+use core_courseformat\output\section_renderer;
+
 /**
  * Remui format renderer class
  */
-class format_remuiformat_renderer extends format_section_renderer_base {
+class format_remuiformat_renderer extends section_renderer {
 
     /**
      * Our course format object as defined in lib.php.
@@ -315,135 +317,6 @@ class format_remuiformat_renderer extends format_section_renderer_base {
         $options->noclean = true;
         $options->overflowdiv = true;
         return format_text($summarytext, $section->summaryformat, $options);
-    }
-
-    /**
-     * Generate the content to displayed on the right part of a section
-     * before course modules are included
-     *
-     * @param stdClass $section The course_section entry from DB
-     * @param stdClass $course The course entry from DB
-     * @param bool $onsectionpage true if being printed on a section page
-     * @return string HTML to output.
-     */
-    public function section_right_content($section, $course, $onsectionpage) {
-        $o = $this->output->spacer();
-
-        $controls = $this->section_edit_control_items($course, $section, $onsectionpage);
-        $o .= $this->section_edit_control_menu($controls, $course, $section);
-
-        return $o;
-    }
-
-    /**
-     * Generate the edit control items of a section
-     *
-     * @param stdClass $course The course entry from DB
-     * @param stdClass $section The course_section entry from DB
-     * @param bool $onsectionpage true if being printed on a section page
-     * @return array of edit control items
-     */
-    protected function section_edit_control_items($course, $section, $onsectionpage = false) {
-
-        if (!$this->page->user_is_editing()) {
-            return array();
-        }
-        $coursecontext = context_course::instance($course->id);
-        if ($onsectionpage) {
-            $url = course_get_url($course, $section->section);
-        } else {
-            $url = course_get_url($course);
-        }
-        $url->param('sesskey', sesskey());
-
-        $controls = array();
-        if ($section->section && has_capability('moodle/course:setcurrentsection', $coursecontext)) {
-            if ($course->marker == $section->section) {  // Show the "light globe" on/off.
-                $url->param('marker', 0);
-                $markedthistopic = get_string('markedthistopic');
-                $highlightoff = get_string('highlightoff');
-                $controls['highlight'] = array('url' => $url, "icon" => 'i/marked',
-                                               'name' => $highlightoff,
-                                               'pixattr' => array('class' => '', 'alt' => $markedthistopic),
-                                               'attr' => array('class' => 'editing_highlight', 'title' => $markedthistopic,
-                                                   'data-action' => 'removemarker'));
-            } else {
-                $url->param('marker', $section->section);
-                $markthistopic = get_string('markthistopic');
-                $highlight = get_string('highlight');
-                $controls['highlight'] = array('url' => $url, "icon" => 'i/marker',
-                                               'name' => $highlight,
-                                               'pixattr' => array('class' => '', 'alt' => $markthistopic),
-                                               'attr' => array('class' => 'editing_highlight', 'title' => $markthistopic,
-                                                   'data-action' => 'setmarker'));
-            }
-        }
-
-        $parentcontrols = parent::section_edit_control_items($course, $section, $onsectionpage);
-
-        // If the edit key exists, we are going to insert our controls after it.
-        if (array_key_exists("edit", $parentcontrols)) {
-            $merged = array();
-            // We can't use splice because we are using associative arrays.
-            // Step through the array and merge the arrays.
-            foreach ($parentcontrols as $key => $action) {
-                $merged[$key] = $action;
-                if ($key == "edit") {
-                    // If we have come to the edit key, merge these controls here.
-                    $merged = array_merge($merged, $controls);
-                }
-            }
-
-            return $merged;
-        } else {
-            return array_merge($controls, $parentcontrols);
-        }
-    }
-
-    /**
-     * If section is not visible, display the message about that ('Not available
-     * until...', that sort of thing). Otherwise, returns blank.
-     *
-     * For users with the ability to view hidden sections, it shows the
-     * information even though you can view the section and also may include
-     * slightly fuller information (so that teachers can tell when sections
-     * are going to be unavailable etc). This logic is the same as for
-     * activities.
-     *
-     * @param section_info $section The course_section entry from DB
-     * @param bool $canviewhidden True if user can view hidden sections
-     * @return string HTML to output
-     */
-    public function section_availability_message($section, $canviewhidden) {
-        global $CFG;
-        $o = '';
-        if (!$section->visible) {
-            if ($canviewhidden) {
-                $o .= $this->courserenderer->availability_info(get_string('hiddenfromstudents'), 'ishidden');
-            } else {
-                // We are here because of the setting "Hidden sections are shown in collapsed form".
-                // Student can not see the section contents but can see its name.
-                $o .= $this->courserenderer->availability_info(get_string('notavailable'), 'ishidden');
-            }
-        } else if (!$section->uservisible) {
-            if ($section->availableinfo) {
-                // Note: We only get to this function if availableinfo is non-empty,
-                // so there is definitely something to print.
-                $formattedinfo = \core_availability\info::format_info(
-                        $section->availableinfo, $section->course);
-                $o .= $this->courserenderer->availability_info($formattedinfo, 'isrestricted');
-            }
-        } else if ($canviewhidden && !empty($CFG->enableavailability)) {
-            // Check if there is an availability restriction.
-            $ci = new \core_availability\info_section($section);
-            $fullinfo = $ci->get_full_information();
-            if ($fullinfo) {
-                $formattedinfo = \core_availability\info::format_info(
-                        $fullinfo, $section->course);
-                $o .= $this->courserenderer->availability_info($formattedinfo, 'isrestricted isfullinfo');
-            }
-        }
-        return $o;
     }
 
     /**

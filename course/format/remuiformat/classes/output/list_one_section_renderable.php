@@ -76,6 +76,12 @@ class format_remuiformat_list_one_section implements renderable, templatable {
     private $displaysection;
 
     /**
+     * Course format data common trait class object
+     * @var course_format_data_common_trait
+     */
+    private $courseformatdatacommontrait;
+
+    /**
      * Constructor
      * @param object          $course         Course object
      * @param int             $displaysection Current section
@@ -87,6 +93,7 @@ class format_remuiformat_list_one_section implements renderable, templatable {
         $this->course = $this->courseformat->get_course();
         $this->courserenderer = $renderer;
         $this->modstats = \format_remuiformat\ModStats::getinstance();
+        $this->courseformatdatacommontrait = \format_remuiformat\course_format_data_common_trait::getinstance();
         $this->settings = $this->courseformat->get_settings();
     }
 
@@ -98,12 +105,14 @@ class format_remuiformat_list_one_section implements renderable, templatable {
      * @return stdClass|array
      */
     public function export_for_template(renderer_base $output) {
-        global $PAGE, $CFG;
+        global $PAGE, $USER;
         unset($output);
         $export = new \stdClass();
         $modinfo = get_fast_modinfo($this->course);
+        $context = context_course::instance($this->course->id);
         $sections = $modinfo->get_section_info_all();
         $renderer = $PAGE->get_renderer('format_remuiformat');
+        $format = course_get_format($this->course);
 
         $export->section = $this->displaysection;
         $export->theme = $PAGE->theme->name;
@@ -125,30 +134,45 @@ class format_remuiformat_list_one_section implements renderable, templatable {
             // Can't view this section.
             return $export;
         }
+
+        // The requested section page.
+        $section = $modinfo->get_section_info($this->displaysection);
+
+        if ($format->is_section_current($section)) {
+            $export->iscurrent = true;
+            $export->highlightedlabel = get_string('highlight');
+        }
+
+        if (!$section->visible) {
+            $export->notavailable = true;
+            if (has_capability('moodle/course:viewhiddensections', $context, $USER)) {
+                $export->hiddenfromstudents = true;
+                $export->notavailable = false;
+            }
+        }
+
         if ($PAGE->user_is_editing()) {
             $export->editing = 1;
+            $export->optionmenu = $this->courseformatdatacommontrait->course_section_controlmenu($this->course, $section);
         }
-        // The requested section page.
-        $currentsection = $modinfo->get_section_info($this->displaysection);
+
         // Title with section navigation links.
         $sectionnavlinks = $renderer->get_nav_links($this->course, $modinfo->get_section_info_all(), $this->displaysection);
         $export->leftnav = $sectionnavlinks['previous'];
         $export->rightnav = $sectionnavlinks['next'];
-        $export->leftside = $renderer->section_left_content($currentsection, $this->course, false);
-        $export->optionmenu = $renderer->section_right_content($currentsection, $this->course, false);
+        $export->leftside = $renderer->section_left_content($section, $this->course, false);
 
         // Title.
-        $sectionname = $renderer->section_title_without_link($currentsection, $this->course);
+        $sectionname = $renderer->section_title_without_link($section, $this->course);
         $export->title = $sectionname;
-        if (!empty($currentsection->summary)) {
-            $export->summary = $renderer->format_summary_text($currentsection);
+        if (!empty($section->summary)) {
+            $export->summary = $renderer->format_summary_text($section);
         }
 
         // Get the details of the activities.
         $export->remuicourseformatlist = true;
-        $export->activities = $this->courserenderer->course_section_cm_list(
-                $this->course, $currentsection, $this->displaysection
-            );
+        $export->activities = $this->courseformatdatacommontrait->course_section_cm_list(
+            $this->course, $section);
         $export->activities .= $this->courserenderer->course_section_add_cm_control(
             $this->course, $this->displaysection, $this->displaysection
         );

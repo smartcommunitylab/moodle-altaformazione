@@ -50,7 +50,7 @@
 }}
 
 {{#addsection}}
-<li id="{{divid}}" class="col-lg-4 col-md-6 col-sm-6 d-inline-flex single-card-container">
+<li id="{{divid}}" class="border-0 col-lg-4 col-md-6 col-sm-6 section main clearfix">
     <div class="single-card d-flex align-items-center">
         {{#numsections}}
             <a href="{{{addurl}}}" class="{{addurlclass}}">{{{addicon}}} {{{straddsection}}}</a>
@@ -68,18 +68,27 @@
 {{/addsection}}
 
 {{^addsection}}
-<li class="col-lg-4 col-md-6 col-sm-6 d-inline-flex section" id="section-{{{index}}}" aria-labelledby="section-{{{index}}} .content .sectionname">
+<li id="section-{{{index}}}" class="border-0 col-lg-4 col-md-6 col-sm-6 section main clearfix"
+    aria-labelledby="section-{{{index}}} .content .sectionname"
+    data-sectionid="{{id}}"
+    data-sectionreturnid="{{sectionreturnid}}"
+    data-for="section"
+    data-number="{{num}}">
     <div class="single-card {{{remuinewthemecolor}}} {{#sectionfirstimage}}sectionfirstimage{{/sectionfirstimage}}"
         style="background: linear-gradient({{remuidefaultsectionoverlay}}, {{remuidefaultsectionoverlay}}), {{sectionfirstimage}};
                 background-repeat: no-repeat;
                 background-size: cover;";>
-        {{#highlighted}}<div class="highlight text-primary"></div>{{/highlighted}}
-        <div class="left side float-left mt-0">
-            {{{ leftside }}}
-        </div>
-        <div class='right side float-right mt-0'>
-            {{{ addnewsection }}}
-            {{{ optionmenu }}}
+        {{#highlighted}}
+            <div class="highlight text-primary"></div>
+        {{/highlighted}}
+        <div class="editing-actions d-flex mb-2">
+            <div class="left side mt-0">
+                {{{ leftside }}}
+            </div>
+            <div class='right side mt-0'>
+                {{{ addnewsection }}}
+                {{{ optionmenu }}}
+            </div>
         </div>
         <div class="content pb-10 pb-2">
             <div class="summary">
@@ -98,6 +107,9 @@
                     {{/hidden}}
                 </div>
             {{/addnewsection}}
+            <div data-region="sectionbadges" class="sectionbadges d-flex align-items-center ml-2">
+                {{> core_courseformat/local/content/section/badges }}
+            </div>
             <div class="wdm-section-summary {{#hidden}}summary-muted{{/hidden}}">
                 {{{ summary }}}
             </div>
@@ -106,7 +118,6 @@
                     <span class="item {{#hidden}}text-muted{{/hidden}}">{{ . }}</span>
                 {{/activityinfo}}
             </div>
-            {{{ hiddenmessage }}}
             {{#editsectionurl}}
                 <a class="text-muted" href="{{ editsectionurl }}"><span><i class="fa fa-cog font-size-20 mb-5" aria-hidden="true"></i></span></a>
             {{/editsectionurl}}
