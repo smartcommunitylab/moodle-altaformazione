@@ -58,7 +58,7 @@
 }
 
 .drawer-toggles .drawer-toggler {
-    top: 80px;
+    top: 170px;
 
     .btn {
         background-color: $brand-primary;
@@ -85,7 +85,7 @@ body.has-secondarynavigation {
 
     .drawer-left,
     .drawer-right {
-        top: calc(70px + 1px);
+        top: calc(170px + 1px);
         height: calc(100vh - 70px);
     }
 

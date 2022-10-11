@@ -29,3 +29,4 @@ $string['accessible'] = 'Fruibile ';
 $string['from'] = 'Dal ';
 $string['to'] = 'Al ';
 $string["signinwith"] = "Accedi tramite SPID o Google";
+$string['course_index'] = "Indice";

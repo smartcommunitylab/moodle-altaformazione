@@ -175,3 +175,4 @@ $string['showcompetencies'] = 'Show Competencies';
 $string['accessible'] = 'Accessible ';
 $string['from'] = 'From ';
 $string['to'] = 'Until ';
+$string['course_index'] = "Index";
