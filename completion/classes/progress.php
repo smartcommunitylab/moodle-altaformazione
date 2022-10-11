@@ -25,8 +25,9 @@
 namespace core_completion;
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot.'/blocks/progress/lib.php');
+
 require_once($CFG->libdir . '/completionlib.php');
+require_once($CFG->dirroot.'/blocks/progress/lib.php');
 /**
  * Class used to return completion progress information.
  *
@@ -67,19 +68,32 @@ class progress {
         if ($completion->is_course_complete($userid)) {
             return 100;
         }
-
+/*
         // Get the number of modules that support completion.
         $modules = $completion->get_activities();
         $count = count($modules);
         if (!$count) {
             return null;
-        }                 
+        }
+
+        // Get the number of modules that have been completed.
+        $completed = 0;
+        foreach ($modules as $module) {
+            $data = $completion->get_data($module, true, $userid);
+            $completed += $data->completionstate == COMPLETION_INCOMPLETE ? 0 : 1;
+        }
+
+	return ($completed / $count) * 100;
+ */
+	// Get the number of modules that support completion.
+        $modules = $completion->get_activities();
+        $count = count($modules);
+        if (!$count) {
+            return null;
+        }
         return \core_completion\progress::calculate_progress_block($course, $userid, $modules, $completion);
     }
 
-    /**
-     * Calculate percentage based on progress bar block and its enabled activities
-     */
     public static function calculate_progress_block($course, $userid, $modules, $completion){
         $courseid = $course->id;
         global $DB;
@@ -115,14 +129,14 @@ class progress {
                                                 $userid,
                                                 $courseid);
             $progress = block_progress_percentage($blockinstance->events, $attempts);
-            // Considering only the first progress block 
+            // Considering only the first progress block
             return $progress;
-        }   
+        }
         return \core_completion\progress::all_activities_weights($modules, $completion, $userid);
     }
 
     /**
-     * If it doesn't exist a progress block then consider all activities with no empty weights   
+     * If it doesn't exist a progress block then consider all activities with no empty weights
      */
     public static function all_activities_weights($modules, $completion, $userid){
         global $DB;
@@ -137,20 +151,20 @@ class progress {
                 WHERE
                     f.shortname in ('duration_hours', 'duration_mins') AND d.instanceid=?", array($data->coursemoduleid));
             foreach ($weights as $key => $value) {
-                $total_weight += $key;
-                $completed += $data->completionstate == COMPLETION_INCOMPLETE ? 0 : $key;
+                $total_weight += intval($key);
+                $completed += $data->completionstate == COMPLETION_INCOMPLETE ? 0 : intval($key);
             }
         }
         if($total_weight == 0){
             return \core_completion\progress::count_completed_activities($modules, $completion, $userid);
         } else{
-            return (int)round(($completed / $total_weight) * 100);  
-            
+            return (int)round(($completed / $total_weight) * 100);
+
         }
     }
 
     /**
-     * Standard way of counting completed activities 
+     * Standard way of counting completed activities
      */
     public static function count_completed_activities($modules, $completion, $userid){
         // Get the number of modules that have been completed.
@@ -163,4 +177,3 @@ class progress {
         return ($completed / $count) * 100;
     }
 }
-
