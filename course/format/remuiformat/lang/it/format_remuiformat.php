@@ -26,3 +26,4 @@ $string['pluginname'] = 'Edwiser course formats';
 
 $string['section0name'] = 'Percentuale di avanzamento';
 $string['unit_duration'] = 'Durata unità: ';
+$string['lastactivity'] = 'Ultima Attività Eseguita';
