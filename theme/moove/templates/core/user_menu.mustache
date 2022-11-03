@@ -76,35 +76,38 @@
             </a>
             <div id="user-action-menu" class="dropdown-menu dropdown-menu-right">
                 <div id="usermenu-carousel" class="carousel slide" data-touch="false" data-interval="false" data-keyboard="false">
-                    <div class="carousel-inner">
-                        <div id="carousel-item-main" class="carousel-item active" role="menu" tabindex="-1" aria-label="{{#str}}user{{/str}}">
-                            <div class="row">
-                                <div class="link-list-wrapper">
-                                    <ul class="link-list">
-                                        <li><a id="accessibilitysettings-control" href="#" class="dropdown-item list-item" role="menuitem" tabindex="-1" aria-label="{{#str}}themesettings:accessibility, theme_moove{{/str}}">
-                                            <span>{{#str}}themesettings:accessibility, theme_moove{{/str}}</span>
-                                        </a></li>
+                    <div class="carousel-inner link-list-wrapper">
+                        <div id="carousel-item-main" class="carousel-item active" role="menu" tabindex="-1" aria-label="{{#str}}user{{/str}}" style="width:250px;">
+                            <ul class="link-list">
+                                <li><a id="accessibilitysettings-control" href="#" class="dropdown-item list-item" role="menuitem" tabindex="-1" aria-label="{{#str}}themesettings:accessibility, theme_moove{{/str}}">
+                                    <span>{{#str}}themesettings:accessibility, theme_moove{{/str}}</span>
+                                </a></li>
 
-                                        <div class="dropdown-divider"></div>
+                                <span class="divider">&nbsp;</span>
 
-                                        {{> core/user_action_menu_items }}
-                                    </ul>
-                                </div>
-                            </div>
+                                {{> core/user_action_menu_items }}
+                            </ul>
                         </div>
                         {{#submenus}}
-                            <div id="carousel-item-{{id}}" class="carousel-item submenu" tabindex="-1" aria-label="{{title}}">
-                                <div class="d-flex flex-column h-100">
-                                    <div class="header">
-                                        <button type="button" class="btn btn-icon carousel-navigation-link text-decoration-none text-body" data-carousel-target-id="carousel-item-main" aria-label="{{#str}}usermenugoback{{/str}}">
-                                            <span class="dir-rtl-hide">{{#pix}}i/arrow-left{{/pix}}</span>
-                                            <span class="dir-ltr-hide">{{#pix}}i/arrow-right{{/pix}}</span>
-                                        </button>
-                                        <span class="pl-2" id="carousel-item-title-{{id}}">{{title}}</span>
+                            <div id="carousel-item-{{id}}" class="carousel-item submenu" tabindex="-1" aria-label="{{title}}" style="width:250px;">
+                                <div class="d-flex flex-column h-100 link-list-wrapper">
+                                    <div class="d-flex flex-row mb-2">
+                                        <div class="col-lg-3 carousel-navigation-link" data-carousel-target-id="carousel-item-main" aria-label="{{#str}}usermenugoback{{/str}}">
+                                            <svg class="icon carousel-navigation-link" data-carousel-target-id="carousel-item-main" aria-label="{{#str}}usermenugoback{{/str}}">
+                                                <use href="{{config.wwwroot}}/theme/moove/bootstrap-italia-my/svg/sprites.svg#it-arrow-left" data-carousel-target-id="carousel-item-main" aria-label="{{#str}}usermenugoback{{/str}}"></use>
+                                            </svg>
+                                        </div>
+                                        <div class="p-2 bd-highlight"><small class="pl-2" id="carousel-item-title-{{id}}">{{title}}</small></div>
                                     </div>
-                                    <div class="dropdown-divider"></div>
+                                    <ul class="link-list">
+                                        <li role="presentation">
+                                            <span class="divider">&nbsp;</span>
+                                        </li>
+                                    </ul>
                                     <div class="items h-100 overflow-auto" role="menu" aria-labelledby="carousel-item-title-{{id}}">
+                                        <ul class="link-list">
                                         {{> core/user_action_menu_submenu_items }}
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -122,3 +125,4 @@
         AccessibilitySettings.init();
     });
 {{/js}}
+
