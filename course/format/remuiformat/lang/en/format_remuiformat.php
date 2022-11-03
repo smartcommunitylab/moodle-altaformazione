@@ -162,3 +162,4 @@ $string['enableusagetrackingdesc'] = "<strong>USAGE TRACKING NOTICE</strong>
 <p>An overview of the data collected is available <strong><a href='https://forums.edwiser.org/topic/67/anonymously-tracking-the-usage-of-edwiser-products' target='_blank'>here</a></strong>.</p>";
 
 $string['unit_duration'] = 'Unit duration: ';
+$string['lastactivity'] = 'Last accessed activity';

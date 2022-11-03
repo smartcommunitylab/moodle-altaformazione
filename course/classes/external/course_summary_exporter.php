@@ -96,6 +96,27 @@ class course_summary_exporter extends \core\external\exporter {
         return $competencies;
     }
 
+    public function get_tags($courseid){
+        /**
+         * Get the list of competencies of the course to be shown on the dashboard widget
+         */
+        global $DB;
+        $competencies = array();
+        $comp = $DB->get_records_sql("
+            SELECT t.id, t.name
+            FROM {tag} t
+            INNER JOIN {tag_instance} i ON t.id=i.tagid
+            INNER JOIN {context} c ON (c.id=i.contextid and c.instanceid = i.itemid)
+            WHERE
+                i.itemtype = 'course' and i.itemid=?", array($courseid));
+        if($comp){
+            foreach($comp as $competency){
+                $competencies[] = $competency->name;
+            }            
+        }       
+        return $competencies;
+    }
+
     protected function get_other_values(renderer_base $output) {
         global $CFG;
         $courseimage = self::get_course_image($this->data);
@@ -110,6 +131,7 @@ class course_summary_exporter extends \core\external\exporter {
         $progress = floor($progress);
         $weight = $this->get_sum_activities_weights($this->data->id);
         $competencies = $this->get_competencies($this->data->id);
+        $tags = $this->get_tags($this->data->id);
         $coursecategory = \core_course_category::get($this->data->category, MUST_EXIST, true);
 
         return array(
@@ -127,6 +149,7 @@ class course_summary_exporter extends \core\external\exporter {
             'startdate_formatted' => $this->data->startdate != 0 ? get_string('from', 'theme_moove') . strVal(date('d/m/Y', $this->data->startdate)) : "",
             'weight' => $weight,
             'competencies' => sizeof($competencies) > 0 ? implode("</br>", $competencies) : "",
+            'tags' => sizeof($tags) > 0 ? implode(" - ", $tags) : "",
             'wwwroot' => $CFG->wwwroot
         );
     }
@@ -231,6 +254,9 @@ class course_summary_exporter extends \core\external\exporter {
                 'type' => PARAM_TEXT
             ),
             'competencies' => array(
+                'type' => PARAM_CLEANHTML
+            ),
+            'tags' => array(
                 'type' => PARAM_CLEANHTML
             ),
             'wwwroot' => array(
