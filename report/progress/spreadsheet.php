@@ -303,7 +303,7 @@ foreach($progress as $user) {
         } 
         $ruolo = implode(", ", $roles);      
     } else{
-        // role
+       // role
         $sql = "SELECT r.name, r.shortname
             FROM {role_assignments} ra
             JOIN {role} r on r.id = ra.roleid
@@ -397,5 +397,4 @@ header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
 header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
 header ('Pragma: public'); // HTTP/1.0
 $writer = new Xlsx($spreadsheet);
-//$writer->save('hello.xlsx');
 $writer->save('php://output');

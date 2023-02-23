@@ -66,7 +66,7 @@ class local_modcustomfields_external extends external_api {
     public static function add_resource($courseid, $sectionid, $resourcename, $path, $duration_hours, $duration_min, $intro, $stealth) {
         global $DB, $CFG;
         $module = self::add_resource_coursemodule($courseid, $sectionid, $resourcename, $duration_hours, $duration_min, $intro, $stealth);
-        #self::create_file_from_pathname($module->coursemodule, 'mod_resource', 0, $path, "content");
+        self::create_file_from_pathname($module->coursemodule, 'mod_resource', 0, $path, "content");
         $result = array();
         $result['moduleid'] = $module->instance;
         return $result;
